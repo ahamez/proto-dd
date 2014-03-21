@@ -100,9 +100,9 @@ struct LIBSDD_ATTRIBUTE_PACKED nary_op
   {
     // Compatibility of nodes is checked on the fly by operations.
     // It avoids to perform an iteration only for this task.
-    if (begin()->index() == SDD<C>::flat_node_index)
+    if (begin()->index() == SDD<C>::proto_node_index)
     {
-      return Operation::template work<const_iterator, flat_node<C>>(begin(), end(), cxt);
+      return Operation::template work<const_iterator, proto_node<C>>(begin(), end(), cxt);
     }
     else
     {

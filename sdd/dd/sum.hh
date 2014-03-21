@@ -203,7 +203,7 @@ struct LIBSDD_ATTRIBUTE_PACKED sum_op_impl
   /// @brief Linear union of flat SDDs whose valuation are "fast iterable".
   template <typename InputIterator, typename NodeType>
   static
-  typename std::enable_if< std::is_same<NodeType, flat_node<C>>::value
+  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
                          and values::values_traits<typename C::Values>::fast_iterable
                          , SDD<C>>::type
   work(InputIterator begin, InputIterator end, context<C>& cxt)

@@ -100,6 +100,14 @@ public:
   }
 
   /// @internal
+  void*
+  env()
+  const noexcept
+  {
+    return nullptr;
+  }
+
+  /// @internal
   /// @brief Tell if this homomorphism skips a given identifier.
   ///
   /// The identifier considered is the head of the given order (order::identifier()).

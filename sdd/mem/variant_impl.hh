@@ -82,9 +82,30 @@ struct union_storage
 
 /*------------------------------------------------------------------------------------------------*/
 
+/// @brief Inherit from this structure to indicate that your visitor should work on raw types.
+struct raw_visitor
+{
+  static void* is_raw;
+};
+
+/*------------------------------------------------------------------------------------------------*/
+
+/// @internal
+template <typename X, typename Env>
+inline
+X&
+view(X& x, const Env& env)
+noexcept
+{
+  return x;
+}
+
+/*------------------------------------------------------------------------------------------------*/
+
 /// @internal
 /// @brief Dispatch the destructor to the contained type in the visited variant.
 struct dtor_visitor
+  : raw_visitor
 {
   using result_type = void;
 
@@ -104,6 +125,7 @@ struct dtor_visitor
 ///
 /// It uses the standard (C++11) way of hashing an object.
 struct hash_visitor
+  : raw_visitor
 {
   using result_type = std::size_t;
 
@@ -121,6 +143,7 @@ struct hash_visitor
 /// @internal
 /// Dispatch the ostream export to the contained type in the visited variant.
 struct ostream_visitor
+  : raw_visitor
 {
   using result_type = std::ostream&;
 
@@ -144,6 +167,7 @@ struct ostream_visitor
 /// @internal
 /// @brief Dispatch the equality operator to the contained type in the visited variant.
 struct eq_visitor
+  : raw_visitor
 {
   using result_type = bool;
 
@@ -173,6 +197,7 @@ struct eq_visitor
 ///
 /// It is used by the unicity table to help it manage memory.
 struct extra_bytes_visitor
+  : raw_visitor
 {
   using result_type = std::size_t;
 
@@ -226,14 +251,46 @@ noexcept
 }
 
 /// @internal
+template <typename Visitor, typename T, typename Env, typename... Args>
+inline
+auto
+invoke_impl(int, const Visitor& v, const T& x, const Env&, Args&&... args)
+noexcept(noexcept(v(x, std::forward<Args>(args)...)))
+-> decltype(Visitor::is_raw, v(x, std::forward<Args>(args)...))
+{
+  return v(x, std::forward<Args>(args)...);
+}
+
+/// @internal
+template <typename Visitor, typename T, typename Env, typename... Args>
+inline
+auto
+invoke_impl(long, const Visitor& v, const T& x, const Env& env, Args&&... args)
+noexcept(noexcept(v(view(x, env), std::forward<Args>(args)...)))
+-> typename Visitor::result_type
+{
+  return v(view(x, env), std::forward<Args>(args)...);
+}
+
+/// @internal
 /// @brief Invoke user's visitor for deduced type.
 template <typename Visitor, typename T, typename... Args>
 inline
 typename enable_if<not is_same<T, nil>::value, typename Visitor::result_type>::type
 invoke(const Visitor& v, const T& x, Args&&... args)
-noexcept(noexcept(v(x, std::forward<Args>(args)...)))
+noexcept(noexcept(invoke_impl(0, v, x, std::forward<Args>(args)...)))
 {
-  return v(x, std::forward<Args>(args)...);
+  return invoke_impl(0, v, x, std::forward<Args>(args)...);
+}
+
+/// @internal
+template <typename Visitor, typename T>
+inline
+typename enable_if<not is_same<T, nil>::value, typename Visitor::result_type>::type
+invoke(const Visitor& v, const T& x)
+noexcept(noexcept(v(x)))
+{
+  return v(x);
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -288,15 +345,50 @@ noexcept
 }
 
 /// @internal
+template <typename Visitor, typename T, typename U, typename XEnv, typename YEnv, typename... Args>
+inline
+auto
+binary_invoke_impl( int, const Visitor& v, const T& x, const U& y, const XEnv&, const YEnv&
+                  , Args&&... args)
+noexcept(noexcept(v(x, y, std::forward<Args>(args)...)))
+-> decltype(Visitor::is_raw, v(x, y, std::forward<Args>(args)...))
+{
+  return v(x, y, std::forward<Args>(args)...);
+}
+
+/// @internal
+template <typename Visitor, typename T, typename U, typename XEnv, typename YEnv, typename... Args>
+inline
+auto
+binary_invoke_impl( long, const Visitor& v, const T& x, const U& y, const XEnv& xenv
+                  , const YEnv& yenv, Args&&... args)
+noexcept(noexcept(v(view(x, xenv), view(y, yenv), std::forward<Args>(args)...)))
+-> typename Visitor::result_type
+{
+  return v(view(x, xenv), view(y, yenv), std::forward<Args>(args)...);
+}
+
+/// @internal
 /// @brief Invoke user's visitor for deduced type.
 template <typename Visitor, typename T, typename U, typename... Args>
 inline
 typename enable_if< not (is_same<T, nil>::value or is_same<U, nil>::value)
                   , typename Visitor::result_type>::type
 binary_invoke(const Visitor& v, const T& x, const U& y, Args&&... args)
-noexcept(noexcept(v(x, y, std::forward<Args>(args)...)))
+noexcept(noexcept(binary_invoke_impl(0, v, x, y, std::forward<Args>(args)...)))
 {
-  return v(x, y, std::forward<Args>(args)...);
+  return binary_invoke_impl(0, v, x, y, std::forward<Args>(args)...);
+}
+
+/// @internal
+template <typename Visitor, typename T, typename U>
+inline
+typename enable_if< not (is_same<T, nil>::value or is_same<U, nil>::value)
+                  , typename Visitor::result_type>::type
+binary_invoke(const Visitor& v, const T& x, const U& y)
+noexcept(noexcept(v(x, y)))
+{
+  return v(x, y);
 }
 
 /*------------------------------------------------------------------------------------------------*/

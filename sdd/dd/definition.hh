@@ -9,6 +9,9 @@
 #include "sdd/dd/definition_fwd.hh"
 #include "sdd/dd/node.hh"
 #include "sdd/dd/path_generator_fwd.hh"
+#include "sdd/dd/proto_env.hh"
+#include "sdd/dd/proto_node.hh"
+#include "sdd/dd/proto_view.hh"
 #include "sdd/dd/terminal.hh"
 #include "sdd/dd/top.hh"
 #include "sdd/mem/ptr.hh"
@@ -43,7 +46,7 @@ private:
   ///
   /// This is the real recursive definition of an SDD: it can be a |0| or |1| terminal, or it
   /// can be a flat or an hierachical node.
-  typedef mem::variant<zero_terminal<C>, one_terminal<C>, flat_node<C>, hierarchical_node<C>>
+  typedef mem::variant<zero_terminal<C>, one_terminal<C>, proto_node<C>, hierarchical_node<C>>
           data_type;
 
 public:
@@ -57,8 +60,8 @@ public:
     = data_type::template index_for_type<one_terminal<C>>();
 
   /// @internal
-  static constexpr std::size_t flat_node_index
-    = data_type::template index_for_type<flat_node<C>>();
+  static constexpr std::size_t proto_node_index
+    = data_type::template index_for_type<proto_node<C>>();
 
   /// @internal
   static constexpr std::size_t hierarchical_node_index
@@ -77,6 +80,8 @@ public:
   /// referenced.
   using ptr_type = mem::ptr<unique_type>;
 
+  using env_type = dd::proto_env<C>;
+
   /// @brief The type of variables.
   using variable_type = typename C::variable_type;
 
@@ -84,6 +89,8 @@ public:
   using values_type = typename C::Values;
 
 private:
+
+  env_type env_;
 
   /// @brief The real smart pointer around a unified SDD.
   ptr_type ptr_;
@@ -171,6 +178,14 @@ public:
     return path_generator<C>(std::bind(dd::paths<C>, std::placeholders::_1, *this), attrs);
   }
 #endif
+
+  /// @internal
+  const env_type&
+  env()
+  const noexcept
+  {
+    return env_;
+  }
 
   /// @brief Indicate if the SDD is |0|.
   /// @return true if the SDD is |0|, false otherwise.
@@ -306,7 +321,7 @@ private:
     {
       dd::alpha_builder<C, Valuation> builder;
       builder.add(std::move(val), succ);
-      return ptr_type(unify_node<Valuation>(var, std::move(builder)));
+      return ptr_type(unify_node(var, std::move(builder)));
     }
   }
 
@@ -327,7 +342,7 @@ private:
     {
       dd::alpha_builder<C, Valuation> builder;
       builder.add(val, succ);
-      return ptr_type(unify_node<Valuation>(var, std::move(builder)));
+      return ptr_type(unify_node(var, std::move(builder)));
     }
   }
 
@@ -346,18 +361,17 @@ private:
     }
     else
     {
-      return ptr_type(unify_node<Valuation>(var, std::move(builder)));
+      return ptr_type(unify_node(var, std::move(builder)));
     }
   }
 
   /// @internal
-  /// @brief Helper function to unify a node, flat or hierarchical, from an alpha.
+  /// @brief Helper function to unify a node, hierarchical, from an alpha.
   ///
   /// O(n) where n is the number of arcs in the builder.
-  template <typename Valuation>
   static
   unique_type&
-  unify_node(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
+  unify_node(variable_type var, dd::alpha_builder<C, SDD>&& builder)
   {
     // Will be erased by the unicity table, either it's an already existing node or a deletion
     // is requested by ptr.
@@ -367,7 +381,27 @@ private:
     auto& ut = global<C>().sdd_unique_table;
     char* addr = ut.allocate(builder.size_to_allocate());
     unique_type* u =
-      new (addr) unique_type(mem::construct<node<C, Valuation>>(), var, builder);
+      new (addr) unique_type(mem::construct<node<C, SDD>>(), var, builder);
+    return ut(u);
+  }
+
+  /// @internal
+  /// @brief Helper function to unify a node, flat, from an alpha.
+  ///
+  /// O(n) where n is the number of arcs in the builder.
+  static
+  unique_type&
+  unify_node(variable_type var, dd::alpha_builder<C, values_type>&& builder)
+  {
+    // Will be erased by the unicity table, either it's an already existing node or a deletion
+    // is requested by ptr.
+    // Note that the alpha function is allocated right behind the node, thus extra care must be
+    // taken. This is also why we use Boost.Intrusive in order to be able to manage memory
+    // exactly the way we want.
+    auto& ut = global<C>().sdd_unique_table;
+    char* addr = ut.allocate(builder.size_to_allocate());
+    unique_type* u =
+      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
     return ut(u);
   }
 };
@@ -473,10 +507,10 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
   typename SDD<C>::variable_type rhs_variable;
 
   // we must convert to the right type before comparing variables
-  if (lhs_index == SDD<C>::flat_node_index)
+  if (lhs_index == SDD<C>::proto_node_index)
   {
-    lhs_variable = mem::variant_cast<flat_node<C>>(*lhs).variable();
-    rhs_variable = mem::variant_cast<flat_node<C>>(*rhs).variable();
+    lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
+    rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
   }
   else
   {

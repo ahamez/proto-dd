@@ -180,7 +180,8 @@ template < typename Visitor
 inline
 typename Visitor::result_type
 apply_binary_visitor( const Visitor& v
-                    , const Variant1<Types1...>& x, const Variant2<Types2...>& y
+                    , const Variant1<Types1...>& x
+                    , const Variant2<Types2...>& y
                     , Args&&... args)
 {
   return binary_dispatch( v
@@ -188,6 +189,7 @@ apply_binary_visitor( const Visitor& v
                         , y.storage(), util::typelist<Types2...>(), y.index()
                         , std::forward<Args>(args)...);
 }
+
 
 /// @internal
 /// @related variant
@@ -235,7 +237,7 @@ inline
 typename Visitor::result_type
 visit(const Visitor& v, const X& x, Args&&... args)
 {
-  return apply_visitor(v, *x, std::forward<Args>(args)...);
+  return apply_visitor(v, *x, x.env(), std::forward<Args>(args)...);
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -247,7 +249,7 @@ inline
 typename Visitor::result_type
 visit_self(const Visitor& v, const X& x, Args&&... args)
 {
-  return apply_visitor(v, *x, x, std::forward<Args>(args)...);
+  return apply_visitor(v, *x, x.env(), x, std::forward<Args>(args)...);
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -259,7 +261,7 @@ inline
 typename Visitor::result_type
 binary_visit(const Visitor& v, const X& x, const Y& y, Args&&... args)
 {
-  return apply_binary_visitor(v, *x, *y, std::forward<Args>(args)...);
+  return apply_binary_visitor(v, *x, *y, x.env(), y.env(), std::forward<Args>(args)...);
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -271,7 +273,7 @@ inline
 typename Visitor::result_type
 binary_visit_self(const Visitor& v, const X& x, const Y& y, Args&&... args)
 {
-  return apply_binary_visitor(v, *x, *y, x, y, std::forward<Args>(args)...);
+  return apply_binary_visitor(v, *x, *y, x.env(), y.env(), x, y, std::forward<Args>(args)...);
 }
 
 /*------------------------------------------------------------------------------------------------*/

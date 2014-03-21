@@ -80,7 +80,9 @@ public:
   /// referenced.
   using ptr_type = mem::ptr<unique_type>;
 
-  using env_type = dd::proto_env<C>;
+  /// @internal
+  /// @brief The type of the environment used to reconstruct a flat SDD.
+  using proto_env_type = dd::proto_env<C>;
 
   /// @brief The type of variables.
   using variable_type = typename C::variable_type;
@@ -90,7 +92,8 @@ public:
 
 private:
 
-  env_type env_;
+  /// @brief The environment to reconstruct the corresponding flat SDD.
+  proto_env_type env_;
 
   /// @brief The real smart pointer around a unified SDD.
   ptr_type ptr_;
@@ -99,7 +102,8 @@ public:
 
   /// @brief Default constructor.
   SDD()
-    : ptr_(zero_ptr())
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(zero_ptr())
   {}
 
   /// @brief Copy constructor.
@@ -121,7 +125,8 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, values_type&& val, const SDD& succ)
-    : ptr_(create_node(var, std::move(val), succ))
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(create_node(var, std::move(val), succ))
   {}
 
   /// @internal
@@ -132,7 +137,8 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, const values_type& val, const SDD& succ)
-    : ptr_(create_node(var, val, succ))
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(create_node(var, val, succ))
   {}
 
   /// @internal
@@ -143,13 +149,15 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, const SDD& val, const SDD& succ)
-    : ptr_(create_node(var, val, succ))
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(create_node(var, val, succ))
   {}
 
   /// @brief Construct an SDD with an order.
   template <typename Initializer>
   SDD(const order<C>& o, const Initializer& init)
-    : ptr_(one_ptr())
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(one_ptr())
   {
     if (o.empty()) // base case of the recursion, ptr_ is defaulted to |1|
     {
@@ -179,14 +187,6 @@ public:
   }
 #endif
 
-  /// @internal
-  const env_type&
-  env()
-  const noexcept
-  {
-    return env_;
-  }
-
   /// @brief Indicate if the SDD is |0|.
   /// @return true if the SDD is |0|, false otherwise.
   ///
@@ -215,7 +215,8 @@ public:
   /// O(1).
   SDD(const ptr_type& ptr)
   noexcept
-    : ptr_(ptr)
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(ptr)
   {}
 
   /// @internal
@@ -226,7 +227,8 @@ public:
   /// O(n) where n is the number of arcs in the builder.
   template <typename Valuation>
   SDD(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
-    : ptr_(create_node(var, std::move(builder)))
+    : env_(dd::empty_proto_env<C>())
+    , ptr_(create_node(var, std::move(builder)))
   {}
 
   /// @internal
@@ -252,10 +254,18 @@ public:
   }
 
   /// @internal
+  const proto_env_type&
+  env()
+  const noexcept
+  {
+    return env_;
+  }
+
+  /// @internal
   /// @brief Get the real smart pointer of the unified data.
   ///
   /// O(1).
-  ptr_type
+  const ptr_type&
   ptr()
   const noexcept
   {

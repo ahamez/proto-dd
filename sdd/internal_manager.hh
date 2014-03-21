@@ -30,6 +30,12 @@ struct internal_manager
   internal_manager(const internal_manager&&) = delete;
   internal_manager& operator=(const internal_manager&&) = delete;
 
+  /// @brief The type of a unified proto environment.
+  using proto_env_unique_type = typename dd::proto_env<C>::unique_type;
+
+  /// @brief The type of a smart pointer to a unified proto environment.
+  using proto_env_ptr_type = typename dd::proto_env<C>::ptr_type;
+
   /// @brief The type of a unified SDD.
   using sdd_unique_type = typename SDD<C>::unique_type;
 
@@ -45,21 +51,28 @@ struct internal_manager
   /// @brief Manage the handlers needed by ptr when a unified data is no longer referenced.
   struct ptr_handlers
   {
-    ptr_handlers( mem::unique_table<sdd_unique_type>& sdd_ut
+    ptr_handlers( mem::unique_table<proto_env_unique_type>& proto_env_ut
+                , mem::unique_table<sdd_unique_type>& sdd_ut
                 , mem::unique_table<hom_unique_type>& hom_ut)
     {
+      mem::set_deletion_handler<proto_env_unique_type>([&](const proto_env_unique_type& u)
+                                                          {proto_env_ut.erase(u);});
       mem::set_deletion_handler<sdd_unique_type>([&](const sdd_unique_type& u){sdd_ut.erase(u);});
       mem::set_deletion_handler<hom_unique_type>([&](const hom_unique_type& u){hom_ut.erase(u);});
     }
 
     ~ptr_handlers()
     {
+      mem::reset_deletion_handler<proto_env_unique_type>();
       mem::reset_deletion_handler<sdd_unique_type>();
       mem::reset_deletion_handler<hom_unique_type>();
     }
   } handlers;
 
-  /// @brief The set of a unified SDD.
+  /// @brief The set of unified proto environments.
+  mem::unique_table<proto_env_unique_type> proto_env_unique_table;
+
+  /// @brief The set of unified SDD.
   mem::unique_table<sdd_unique_type> sdd_unique_table;
 
   /// @brief The SDD operations evaluation context.
@@ -70,6 +83,9 @@ struct internal_manager
 
   /// @brief The homomorphisms evaluation context.
   hom::context<C> hom_context;
+
+  /// @brief The cached empty proto environment.
+  const proto_env_ptr_type empty_proto_env;
 
   /// @brief The cached |0| terminal.
   const sdd_ptr_type zero;
@@ -85,13 +101,15 @@ struct internal_manager
 
   /// @brief Constructor with a given configuration.
   internal_manager(const C& configuration)
-    : handlers(sdd_unique_table, hom_unique_table)
+    : handlers(proto_env_unique_table, sdd_unique_table, hom_unique_table)
+    , proto_env_unique_table(configuration.sdd_unique_table_size)
     , sdd_unique_table(configuration.sdd_unique_table_size)
     , sdd_context( configuration.sdd_difference_cache_size
                  , configuration.sdd_intersection_cache_size
                  , configuration.sdd_sum_cache_size)
     , hom_unique_table(configuration.hom_unique_table_size)
     , hom_context(configuration.hom_cache_size, sdd_context)
+    , empty_proto_env(mk_empty_proto_env())
     , zero(mk_terminal<zero_terminal<C>>())
     , one(mk_terminal<one_terminal<C>>())
     , id(mk_id())
@@ -100,7 +118,22 @@ struct internal_manager
 
 private:
 
-  /// brief Helper to construct terminals.
+  /// @brief Helper to construct an empty proto environment.
+  proto_env_ptr_type
+  mk_empty_proto_env()
+  {
+//    char* addr = proto_unique_table.allocate(0 /*extra bytes*/);
+//    auto* u = new (addr) proto_unique_type();
+//    auto* tmp = &proto_unique_table(u);
+//    std::cout << "A" << std::endl;
+//    return proto_ptr_type(*tmp);
+//    return proto_ptr_type(proto_unique_table(u));
+    char* addr = proto_env_unique_table.allocate(0 /*extra bytes*/);
+    proto_env_unique_type* u = new (addr) proto_env_unique_type();
+    return proto_env_ptr_type(proto_env_unique_table(u));
+  }
+
+  /// @brief Helper to construct terminals.
   template <typename T>
   sdd_ptr_type
   mk_terminal()

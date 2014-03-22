@@ -4,7 +4,7 @@
 //#include <vector>
 
 #include "sdd/dd/definition_fwd.hh"
-//#include "sdd/dd/sparse_stack.hh"
+#include "sdd/dd/sparse_stack.hh"
 #include "sdd/mem/ptr.hh"
 #include "sdd/mem/ref_counted.hh"
 #include "sdd/util/hash.hh"

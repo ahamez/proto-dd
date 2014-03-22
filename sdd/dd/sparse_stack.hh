@@ -93,7 +93,7 @@ private:
       else // No more default values for the current entry.
       {
         ++cit_;
-        to_skip_ = cit_->skip;
+        to_skip_ = cit_ == end_ ? std::numeric_limits<std::uint32_t>::max() : cit_->skip;
       }
     }
     else // Past the end of the sparse_stack's underlying container.

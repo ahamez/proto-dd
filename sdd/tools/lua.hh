@@ -141,14 +141,14 @@ struct to_lua_visitor
     return insertion.first->second;
   }
 
-  /// @brief Hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    os_ << "Hierarchial SDD not supported yet." << std::endl;
-    return result_type();
-  }
+//  /// @brief Hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    os_ << "Hierarchial SDD not supported yet." << std::endl;
+//    return result_type();
+//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

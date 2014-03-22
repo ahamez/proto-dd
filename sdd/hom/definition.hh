@@ -38,7 +38,7 @@ private:
 
   /// @brief A canonized homomorphism.
   typedef mem::variant< hom::_composition<C>
-                      , hom::_cons<C, SDD<C>>
+//                      , hom::_cons<C, SDD<C>>
                       , hom::_cons<C, typename C::Values>
                       , hom::_constant<C>
 #if !defined(HAS_NO_BOOST_COROUTINE)

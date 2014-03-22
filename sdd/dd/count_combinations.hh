@@ -60,21 +60,21 @@ struct count_combinations_visitor
     return insertion.first->second;
   }
 
-  /// @brief The number of paths for a hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    const auto insertion = cache_.emplace(reinterpret_cast<const char*>(&n), 0);
-    if (insertion.second)
-    {
-      for (const auto& arc : n)
-      {
-        insertion.first->second += visit(*this, arc.valuation()) * visit(*this, arc.successor());
-      }
-    }
-    return insertion.first->second;
-  }
+//  /// @brief The number of paths for a hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    const auto insertion = cache_.emplace(reinterpret_cast<const char*>(&n), 0);
+//    if (insertion.second)
+//    {
+//      for (const auto& arc : n)
+//      {
+//        insertion.first->second += visit(*this, arc.valuation()) * visit(*this, arc.successor());
+//      }
+//    }
+//    return insertion.first->second;
+//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

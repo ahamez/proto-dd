@@ -57,26 +57,26 @@ struct nb_nodes_visitor
     }
   }
 
-  /// @brief Hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
-    {
-      result_type res {0, 1};
-      for (const auto& arc : n)
-      {
-        accumulate_pair(res, visit(*this, arc.valuation()));
-        accumulate_pair(res, visit(*this, arc.successor()));
-      }
-      return res;
-    }
-    else
-    {
-      return std::make_pair(0, 0);
-    }
-  }
+//  /// @brief Hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
+//    {
+//      result_type res {0, 1};
+//      for (const auto& arc : n)
+//      {
+//        accumulate_pair(res, visit(*this, arc.valuation()));
+//        accumulate_pair(res, visit(*this, arc.successor()));
+//      }
+//      return res;
+//    }
+//    else
+//    {
+//      return std::make_pair(0, 0);
+//    }
+//  }
 
 private:
 

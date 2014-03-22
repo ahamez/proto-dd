@@ -74,31 +74,31 @@ TYPED_TEST(nodes_test, flat_sdd)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(nodes_test, hierarchical_sdd)
-{
-  {
-    const SDD x(0, one, one);
-    ASSERT_EQ(std::make_pair(0u, 1u), sdd::tools::nodes(x));
-  }
-  {
-    const SDD nested(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
-    const SDD x(1, nested, SDD(0, nested, one));
-    ASSERT_EQ(std::make_pair(4u, 2u), sdd::tools::nodes(x));
-  }
-  {
-    const SDD nested0(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
-    const SDD nested1(3, {1}, SDD(2, {1}, SDD(1, {1}, SDD(0, {1}, one))));
-    const SDD x = SDD(1, nested0, SDD(0, nested0, one))
-                + SDD(1, nested1, SDD(0, nested1, one));
-    ASSERT_EQ(std::make_pair(8u, 3u), sdd::tools::nodes(x));
-  }
-  {
-    const SDD nested0(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
-    const SDD nested1(1, nested0, SDD(0, nested0, one));
-    const SDD x(1, nested1, SDD(0, nested1, one));
-    ASSERT_EQ(std::make_pair(4u, 4u), sdd::tools::nodes(x));
-  }
-}
+//TYPED_TEST(nodes_test, hierarchical_sdd)
+//{
+//  {
+//    const SDD x(0, one, one);
+//    ASSERT_EQ(std::make_pair(0u, 1u), sdd::tools::nodes(x));
+//  }
+//  {
+//    const SDD nested(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
+//    const SDD x(1, nested, SDD(0, nested, one));
+//    ASSERT_EQ(std::make_pair(4u, 2u), sdd::tools::nodes(x));
+//  }
+//  {
+//    const SDD nested0(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
+//    const SDD nested1(3, {1}, SDD(2, {1}, SDD(1, {1}, SDD(0, {1}, one))));
+//    const SDD x = SDD(1, nested0, SDD(0, nested0, one))
+//                + SDD(1, nested1, SDD(0, nested1, one));
+//    ASSERT_EQ(std::make_pair(8u, 3u), sdd::tools::nodes(x));
+//  }
+//  {
+//    const SDD nested0(3, {0}, SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, one))));
+//    const SDD nested1(1, nested0, SDD(0, nested0, one));
+//    const SDD x(1, nested1, SDD(0, nested1, one));
+//    ASSERT_EQ(std::make_pair(4u, 4u), sdd::tools::nodes(x));
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 

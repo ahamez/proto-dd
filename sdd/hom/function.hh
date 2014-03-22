@@ -199,14 +199,14 @@ private:
       return one<C>();
     }
 
-    /// @brief A function can't be applied on an hierarchical node.
-    SDD<C>
-    operator()( const hierarchical_node<C>&, const SDD<C>& s
-              , const function_base<C>&, context<C>&, const order<C>&)
-    const
-    {
-      throw evaluation_error<C>(s);
-    }
+//    /// @brief A function can't be applied on an hierarchical node.
+//    SDD<C>
+//    operator()( const hierarchical_node<C>&, const SDD<C>& s
+//              , const function_base<C>&, context<C>&, const order<C>&)
+//    const
+//    {
+//      throw evaluation_error<C>(s);
+//    }
 
     /// @brief Evaluation on a flat node.
     SDD<C>

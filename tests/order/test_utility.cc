@@ -74,32 +74,32 @@ TYPED_TEST(order_utility_test, sdd_initializer_flat)
 
 /*-------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(order_utility_test, sdd_initializer_hierarchical)
-{
-  {
-    order_builder ob0;
-    ob0.push("foo");
-    order_builder ob1;
-    ob1.push("bar", ob0);
-    ASSERT_EQ(SDD(0, SDD(0, {0}, one), one), SDD(order(ob1), initializer<conf>()));
-  }
-  {
-    order_builder ob0;
-    ob0.push("foo1").push("foo2");
-    order_builder ob1;
-    ob1.push("bar", ob0);
-    ASSERT_EQ( SDD(0, SDD(1, {0}, SDD(0, {0}, one)), one)
-             , SDD(order(ob1), initializer<conf>()));
-  }
-  {
-    order_builder nested_a {"a"};
-    order_builder nested_b {"b"};
-    order_builder ob;
-    ob.push("y", nested_b);
-    ob.push("x", nested_a);
-    ASSERT_EQ( SDD(1, SDD(0, {0}, one), SDD(0, SDD(0, {0}, one), one))
-             , SDD(order(ob), initializer<conf>()));
-  }
-}
+//TYPED_TEST(order_utility_test, sdd_initializer_hierarchical)
+//{
+//  {
+//    order_builder ob0;
+//    ob0.push("foo");
+//    order_builder ob1;
+//    ob1.push("bar", ob0);
+//    ASSERT_EQ(SDD(0, SDD(0, {0}, one), one), SDD(order(ob1), initializer<conf>()));
+//  }
+//  {
+//    order_builder ob0;
+//    ob0.push("foo1").push("foo2");
+//    order_builder ob1;
+//    ob1.push("bar", ob0);
+//    ASSERT_EQ( SDD(0, SDD(1, {0}, SDD(0, {0}, one)), one)
+//             , SDD(order(ob1), initializer<conf>()));
+//  }
+//  {
+//    order_builder nested_a {"a"};
+//    order_builder nested_b {"b"};
+//    order_builder ob;
+//    ob.push("y", nested_b);
+//    ob.push("x", nested_a);
+//    ASSERT_EQ( SDD(1, SDD(0, {0}, one), SDD(0, SDD(0, {0}, one), one))
+//             , SDD(order(ob), initializer<conf>()));
+//  }
+//}
 
 /*-------------------------------------------------------------------------------------------*/

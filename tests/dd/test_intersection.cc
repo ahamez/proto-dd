@@ -240,147 +240,147 @@ TYPED_TEST(intersection_test, flat_nary)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(intersection_test, hierarchical_nary)
-{
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-    ops.add(SDD('a', SDD('b', {0,1,2}, one), one));
-    ops.add(SDD('a', SDD('b', {1,2,3}, one), one));
-    ops.add(SDD('a', SDD('b', {2,3,4}, one), one));
-    ops.add(SDD('a', SDD('b', {2,3,5}, one), one));
-    ASSERT_EQ(SDD('a', SDD('b', {2}, one), one), intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-    ops.add(SDD('a', SDD('b', {0,1,2}, one), SDD('a', SDD('b', {0,1,2}, one), one)));
-    ops.add(SDD('a', SDD('b', {1,2,3}, one), SDD('a', SDD('b', {1,2,3}, one), one)));
-    ops.add(SDD('a', SDD('b', {2,3,4}, one), SDD('a', SDD('b', {2,3,4}, one), one)));
-    ASSERT_EQ( SDD('a', SDD('b', {2}, one), SDD('a', SDD('b', {2}, one), one))
-             , intersection(cxt, std::move(ops)));
-  }
-}
+//TYPED_TEST(intersection_test, hierarchical_nary)
+//{
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//    ops.add(SDD('a', SDD('b', {0,1,2}, one), one));
+//    ops.add(SDD('a', SDD('b', {1,2,3}, one), one));
+//    ops.add(SDD('a', SDD('b', {2,3,4}, one), one));
+//    ops.add(SDD('a', SDD('b', {2,3,5}, one), one));
+//    ASSERT_EQ(SDD('a', SDD('b', {2}, one), one), intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//    ops.add(SDD('a', SDD('b', {0,1,2}, one), SDD('a', SDD('b', {0,1,2}, one), one)));
+//    ops.add(SDD('a', SDD('b', {1,2,3}, one), SDD('a', SDD('b', {1,2,3}, one), one)));
+//    ops.add(SDD('a', SDD('b', {2,3,4}, one), SDD('a', SDD('b', {2,3,4}, one), one)));
+//    ASSERT_EQ( SDD('a', SDD('b', {2}, one), SDD('a', SDD('b', {2}, one), one))
+//             , intersection(cxt, std::move(ops)));
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(intersection_test, hierarchical_x_inter_y)
-{
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-
-    values_type valx {0,1};
-    ops.add(SDD(10, SDD(0, valx, one), one));
-
-    values_type valy {1,2};
-    ops.add(SDD(10, SDD(0, valy, one), one));
-
-    values_type valref {1};
-
-    ASSERT_EQ( SDD(10, SDD(0, valref, one), one)
-             , intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-
-    values_type valx {0,1};
-    ops.add(SDD(10, SDD(0, valx, one), one));
-
-    values_type valy {2,3};
-    ops.add(SDD(10, SDD(0, valy, one), one));
-
-    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-
-    values_type valx {0,1};
-    SDD x(0, valx, one);
-    ops.add(SDD(10, x, SDD(11, x, one)));
-
-    values_type valy {1,2};
-    SDD y(0, valy, one);
-    ops.add(SDD(10, y, SDD(11, y, one)));
-
-    values_type valref {1};
-    SDD ref(0, valref, one);
-
-    ASSERT_EQ( SDD(10, ref, SDD(11, ref, one))
-             , intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-
-    values_type valx {0,1};
-    SDD x(0, valx, one);
-    ops.add(SDD(10, x, SDD(11, x, one)));
-
-    values_type valy {2,3};
-    SDD y(0, valy, one);
-    ops.add(SDD(10, y, SDD(11, y, one)));
-
-    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-
-    values_type val10x {0,1};
-    values_type val11x {2,3};
-    SDD x10(0, val10x, one);
-    SDD x11(0, val11x, one);
-    ops.add(SDD(10, x10, SDD(11, x11, one)));
-
-    values_type val10y {1,2};
-    values_type val11y {3,4};
-    SDD y10(0, val10y, one);
-    SDD y11(0, val11y, one);
-    ops.add(SDD(10, y10, SDD(11, y11, one)));
-
-    values_type val10ref {1};
-    values_type val11ref {3};
-    SDD ref10(0, val10ref, one);
-    SDD ref11(0, val11ref, one);
-
-    ASSERT_EQ( SDD(10, ref10, SDD(11, ref11, one))
-             , intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-    
-    values_type val10x {0,1};
-    values_type val11x {2,3};
-    SDD x10(0, val10x, one);
-    SDD x11(0, val11x, one);
-    ops.add(SDD(10, x10, SDD(11, x11, one)));
-    
-    values_type val10y {2,3};
-    values_type val11y {3,4};
-    SDD y10(0, val10y, one);
-    SDD y11(0, val11y, one);
-    ops.add(SDD(10, y10, SDD(11, y11, one)));
-    
-    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
-  }
-  {
-    sdd::dd::intersection_builder<conf, SDD> ops;
-    
-    values_type val10x;
-    val10x.insert(0);
-    val10x.insert(1);
-    values_type val11x;
-    val11x.insert(2);
-    val11x.insert(3);
-    SDD x10(0, val10x, one);
-    SDD x11(0, val11x, one);
-    ops.add(SDD(10, x10, SDD(11, x11, one)));
-
-    values_type val10y {1,2};
-    values_type val11y {4,5};
-    SDD y10(0, val10y, one);
-    SDD y11(0, val11y, one);
-    ops.add(SDD(10, y10, SDD(11, y11, one)));
-    
-    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
-  }
-}
+//TYPED_TEST(intersection_test, hierarchical_x_inter_y)
+//{
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//
+//    values_type valx {0,1};
+//    ops.add(SDD(10, SDD(0, valx, one), one));
+//
+//    values_type valy {1,2};
+//    ops.add(SDD(10, SDD(0, valy, one), one));
+//
+//    values_type valref {1};
+//
+//    ASSERT_EQ( SDD(10, SDD(0, valref, one), one)
+//             , intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//
+//    values_type valx {0,1};
+//    ops.add(SDD(10, SDD(0, valx, one), one));
+//
+//    values_type valy {2,3};
+//    ops.add(SDD(10, SDD(0, valy, one), one));
+//
+//    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//
+//    values_type valx {0,1};
+//    SDD x(0, valx, one);
+//    ops.add(SDD(10, x, SDD(11, x, one)));
+//
+//    values_type valy {1,2};
+//    SDD y(0, valy, one);
+//    ops.add(SDD(10, y, SDD(11, y, one)));
+//
+//    values_type valref {1};
+//    SDD ref(0, valref, one);
+//
+//    ASSERT_EQ( SDD(10, ref, SDD(11, ref, one))
+//             , intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//
+//    values_type valx {0,1};
+//    SDD x(0, valx, one);
+//    ops.add(SDD(10, x, SDD(11, x, one)));
+//
+//    values_type valy {2,3};
+//    SDD y(0, valy, one);
+//    ops.add(SDD(10, y, SDD(11, y, one)));
+//
+//    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//
+//    values_type val10x {0,1};
+//    values_type val11x {2,3};
+//    SDD x10(0, val10x, one);
+//    SDD x11(0, val11x, one);
+//    ops.add(SDD(10, x10, SDD(11, x11, one)));
+//
+//    values_type val10y {1,2};
+//    values_type val11y {3,4};
+//    SDD y10(0, val10y, one);
+//    SDD y11(0, val11y, one);
+//    ops.add(SDD(10, y10, SDD(11, y11, one)));
+//
+//    values_type val10ref {1};
+//    values_type val11ref {3};
+//    SDD ref10(0, val10ref, one);
+//    SDD ref11(0, val11ref, one);
+//
+//    ASSERT_EQ( SDD(10, ref10, SDD(11, ref11, one))
+//             , intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//    
+//    values_type val10x {0,1};
+//    values_type val11x {2,3};
+//    SDD x10(0, val10x, one);
+//    SDD x11(0, val11x, one);
+//    ops.add(SDD(10, x10, SDD(11, x11, one)));
+//    
+//    values_type val10y {2,3};
+//    values_type val11y {3,4};
+//    SDD y10(0, val10y, one);
+//    SDD y11(0, val11y, one);
+//    ops.add(SDD(10, y10, SDD(11, y11, one)));
+//    
+//    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
+//  }
+//  {
+//    sdd::dd::intersection_builder<conf, SDD> ops;
+//    
+//    values_type val10x;
+//    val10x.insert(0);
+//    val10x.insert(1);
+//    values_type val11x;
+//    val11x.insert(2);
+//    val11x.insert(3);
+//    SDD x10(0, val10x, one);
+//    SDD x11(0, val11x, one);
+//    ops.add(SDD(10, x10, SDD(11, x11, one)));
+//
+//    values_type val10y {1,2};
+//    values_type val11y {4,5};
+//    SDD y10(0, val10y, one);
+//    SDD y11(0, val11y, one);
+//    ops.add(SDD(10, y10, SDD(11, y11, one)));
+//    
+//    ASSERT_EQ(zero, intersection(cxt, std::move(ops)));
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 

@@ -25,17 +25,17 @@ struct paths_visitor
     : yield(y)
   {}
 
-  void
-  operator()( const hierarchical_node<C>& n
-            , std::shared_ptr<path<C>> path, std::shared_ptr<sdd_stack<C>> stack)
-  const
-  {
-    for (const auto& arc : n)
-    {
-      const auto local_stack = std::make_shared<sdd_stack<C>>(arc.successor(), stack);
-      visit(*this, arc.valuation(), path, local_stack);
-    }
-  }
+//  void
+//  operator()( const hierarchical_node<C>& n
+//            , std::shared_ptr<path<C>> path, std::shared_ptr<sdd_stack<C>> stack)
+//  const
+//  {
+//    for (const auto& arc : n)
+//    {
+//      const auto local_stack = std::make_shared<sdd_stack<C>>(arc.successor(), stack);
+//      visit(*this, arc.valuation(), path, local_stack);
+//    }
+//  }
 
   void
   operator()( const flat_node<C>& n

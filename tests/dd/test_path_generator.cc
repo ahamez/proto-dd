@@ -90,58 +90,58 @@ TYPED_TEST(path_generator_test, flat)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(path_generator_test, hierarchical)
-{
-  {
-    const auto x = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
-    const auto z = SDD(10, x, SDD(11, x, one));
-    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
-    std::sort(v.begin(), v.end());
-
-    ASSERT_EQ(4u, v.size());
-    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
-                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
-                                   };
-    std::sort(r.begin(), r.end());
-    ASSERT_EQ(r, v);
-  }
-  {
-    const auto x1 = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
-    const auto x2 = SDD('1', {2}, SDD('0', {2}, one)) + SDD('1', {3}, SDD('0', {3}, one));
-    const auto z = SDD(10, x1, SDD(11, x1, one)) + SDD(10, x2, SDD(11, x2, one));
-    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
-    std::sort(v.begin(), v.end());
-
-    ASSERT_EQ(8u, v.size());
-    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
-                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
-                                   , sdd::path<conf>{{2}, {2}, {2}, {2}}
-                                   , sdd::path<conf>{{2}, {2}, {3}, {3}}
-                                   , sdd::path<conf>{{3}, {3}, {2}, {2}}
-                                   , sdd::path<conf>{{3}, {3}, {3}, {3}}
-                                   };
-    std::sort(r.begin(), r.end());
-    ASSERT_EQ(r, v);
-  }
-  {
-    const auto x = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
-    const auto z = SDD(100, SDD(10, x, one), SDD(11, x, one));
-    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
-    std::sort(v.begin(), v.end());
-
-    ASSERT_EQ(4u, v.size());
-    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
-                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
-                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
-                                   };
-    std::sort(r.begin(), r.end());
-    ASSERT_EQ(r, v);
-  }
-}
+//TYPED_TEST(path_generator_test, hierarchical)
+//{
+//  {
+//    const auto x = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
+//    const auto z = SDD(10, x, SDD(11, x, one));
+//    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
+//    std::sort(v.begin(), v.end());
+//
+//    ASSERT_EQ(4u, v.size());
+//    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
+//                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
+//                                   };
+//    std::sort(r.begin(), r.end());
+//    ASSERT_EQ(r, v);
+//  }
+//  {
+//    const auto x1 = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
+//    const auto x2 = SDD('1', {2}, SDD('0', {2}, one)) + SDD('1', {3}, SDD('0', {3}, one));
+//    const auto z = SDD(10, x1, SDD(11, x1, one)) + SDD(10, x2, SDD(11, x2, one));
+//    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
+//    std::sort(v.begin(), v.end());
+//
+//    ASSERT_EQ(8u, v.size());
+//    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
+//                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
+//                                   , sdd::path<conf>{{2}, {2}, {2}, {2}}
+//                                   , sdd::path<conf>{{2}, {2}, {3}, {3}}
+//                                   , sdd::path<conf>{{3}, {3}, {2}, {2}}
+//                                   , sdd::path<conf>{{3}, {3}, {3}, {3}}
+//                                   };
+//    std::sort(r.begin(), r.end());
+//    ASSERT_EQ(r, v);
+//  }
+//  {
+//    const auto x = SDD('1', {0}, SDD('0', {0}, one)) + SDD('1', {1}, SDD('0', {1}, one));
+//    const auto z = SDD(100, SDD(10, x, one), SDD(11, x, one));
+//    std::vector<sdd::path<conf>> v(begin(z.paths()), end(z.paths()));
+//    std::sort(v.begin(), v.end());
+//
+//    ASSERT_EQ(4u, v.size());
+//    std::vector<sdd::path<conf>> r { sdd::path<conf>{{0}, {0}, {0}, {0}}
+//                                   , sdd::path<conf>{{0}, {0}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {1}, {1}}
+//                                   , sdd::path<conf>{{1}, {1}, {0}, {0}}
+//                                   };
+//    std::sort(r.begin(), r.end());
+//    ASSERT_EQ(r, v);
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/

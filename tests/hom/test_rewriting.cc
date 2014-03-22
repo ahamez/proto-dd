@@ -66,18 +66,18 @@ TYPED_TEST(rewriting_test, partition)
 TYPED_TEST(rewriting_test, sum)
 {
   using ob = order_builder;
-  {
-    const order o(ob("a", ob {"x"}) << ob("b"));
-    const homomorphism h0 = sum<conf>( o
-                            , { id
-                              , inductive<conf>(targeted_incr<conf>("b", 0))
-                              , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))
-                              });
-    const homomorphism h1 = sdd::rewrite(o, h0);
-    ASSERT_NE(h1, h0);
-    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
-    ASSERT_EQ(h0(o, s0), h1(o, s0));
-  }
+//  {
+//    const order o(ob("a", ob {"x"}) << ob("b"));
+//    const homomorphism h0 = sum<conf>( o
+//                            , { id
+//                              , inductive<conf>(targeted_incr<conf>("b", 0))
+//                              , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))
+//                              });
+//    const homomorphism h1 = sdd::rewrite(o, h0);
+//    ASSERT_NE(h1, h0);
+//    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
+//    ASSERT_EQ(h0(o, s0), h1(o, s0));
+//  }
   {
     const order o(ob({"a", "b", "c"}));
     const homomorphism h0
@@ -104,17 +104,17 @@ TYPED_TEST(rewriting_test, intersection)
   const auto ib = inductive<conf>(targeted_incr<conf>("b", 0));
   const auto ic = inductive<conf>(targeted_incr<conf>("c", 0));
 
-  {
-    const order o(ob("a", ob {"x"}) << ob("b"));
-    const homomorphism h0
-      = intersection<conf>( o
-                          , { inductive<conf>(targeted_incr<conf>("b", 0))
-                            , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))});
-    const homomorphism h1 = sdd::rewrite(o, h0);
-    ASSERT_NE(h1, h0);
-    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
-    ASSERT_EQ(h0(o, s0), h1(o, s0));
-  }
+//  {
+//    const order o(ob("a", ob {"x"}) << ob("b"));
+//    const homomorphism h0
+//      = intersection<conf>( o
+//                          , { inductive<conf>(targeted_incr<conf>("b", 0))
+//                            , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))});
+//    const homomorphism h1 = sdd::rewrite(o, h0);
+//    ASSERT_NE(h1, h0);
+//    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
+//    ASSERT_EQ(h0(o, s0), h1(o, s0));
+//  }
   {
     const order o(ob({"a", "b", "c"}));
     const homomorphism h0 = intersection<conf>(o, {ia, ib, ic});
@@ -152,18 +152,18 @@ TYPED_TEST(rewriting_test, intersection)
 TYPED_TEST(rewriting_test, transitive_closure)
 {
   using ob = order_builder;
-  {
-    const order o(ob("a", ob {"x"}) << ob("b"));
-    const auto h0
-      = fixpoint(sum<conf>( o
-                          , { id
-                            , inductive<conf>(targeted_incr<conf>("b", 0))
-                            , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))}));
-    const auto h1 = sdd::rewrite(o, h0);
-    ASSERT_NE(h1, h0);
-    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
-    ASSERT_EQ(h0(o, s0), h1(o, s0));
-  }
+//  {
+//    const order o(ob("a", ob {"x"}) << ob("b"));
+//    const auto h0
+//      = fixpoint(sum<conf>( o
+//                          , { id
+//                            , inductive<conf>(targeted_incr<conf>("b", 0))
+//                            , local("a", o, inductive<conf>(targeted_incr<conf>("x", 0)))}));
+//    const auto h1 = sdd::rewrite(o, h0);
+//    ASSERT_NE(h1, h0);
+//    SDD s0(1, SDD(0, {0}, one), SDD(0, {0}, one));
+//    ASSERT_EQ(h0(o, s0), h1(o, s0));
+//  }
   {
     const order o(ob("a", ob {"x"}) << ob("b"));
     const auto h0

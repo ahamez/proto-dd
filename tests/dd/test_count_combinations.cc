@@ -57,25 +57,25 @@ TYPED_TEST(count_combinations_test, flat)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(count_combinations_test, hierarchical)
-{
-  ASSERT_EQ(3, sdd::dd::count_combinations(SDD('a', SDD('b', {0,1,2}, one), one)));
-  ASSERT_EQ(9, sdd::dd::count_combinations( SDD( 'a', SDD('b', {0,1,2}, one)
-                               , SDD( 'a', SDD('b', {0,1,2}, one)
-                                    , one
-                                    )
-                               )
-                          )
-           );
-  ASSERT_EQ(9, sdd::dd::count_combinations( SDD( 'a', SDD('b', SDD('c', {0,1,2}, one), one)
-                               , SDD( 'a', SDD('b', SDD('c', {0,1,2}, one), one)
-                                    , one
-                                    )
-                               )
-                          )
-           );
-  ASSERT_EQ(6, sdd::dd::count_combinations( SDD('a', SDD('b', {0,1,2}, one), one)
-                          + SDD('a', SDD('b', {3,4,5}, one), one)));
-}
+//TYPED_TEST(count_combinations_test, hierarchical)
+//{
+//  ASSERT_EQ(3, sdd::dd::count_combinations(SDD('a', SDD('b', {0,1,2}, one), one)));
+//  ASSERT_EQ(9, sdd::dd::count_combinations( SDD( 'a', SDD('b', {0,1,2}, one)
+//                               , SDD( 'a', SDD('b', {0,1,2}, one)
+//                                    , one
+//                                    )
+//                               )
+//                          )
+//           );
+//  ASSERT_EQ(9, sdd::dd::count_combinations( SDD( 'a', SDD('b', SDD('c', {0,1,2}, one), one)
+//                               , SDD( 'a', SDD('b', SDD('c', {0,1,2}, one), one)
+//                                    , one
+//                                    )
+//                               )
+//                          )
+//           );
+//  ASSERT_EQ(6, sdd::dd::count_combinations( SDD('a', SDD('b', {0,1,2}, one), one)
+//                          + SDD('a', SDD('b', {3,4,5}, one), one)));
+//}
 
 /*------------------------------------------------------------------------------------------------*/

@@ -53,64 +53,64 @@ public:
       : cxt_(cxt), order_(o), h_(h), sdd_(s)
     {}
 
-    /// @brief Hierarchical nodes case.
-    SDD<C>
-    operator()(const hierarchical_node<C>& node)
-    const
-    {
-      try
-      {
-        if (h_.selector()) // partition won't change
-        {
-          dd::square_union<C, SDD<C>> su;
-          su.reserve(node.size());
-          for (const auto& arc : node)
-          {
-            try
-            {
-              const SDD<C> new_valuation = h_(cxt_, order_.nested(), arc.valuation());
-              if (not new_valuation.empty())
-              {
-                su.add(arc.successor(), new_valuation);
-              }
-            }
-            catch (interrupt<C>& i)
-            {
-              su.add(arc.successor(), i.result());
-              i.result() = {node.variable(), su(cxt_.sdd_context())};
-              throw;
-            }
-          }
-          return {node.variable(), su(cxt_.sdd_context())};
-        }
-        else // partition will change
-        {
-          dd::sum_builder<C, SDD<C>> sum_operands;
-          sum_operands.reserve(node.size());
-          for (const auto& arc : node)
-          {
-            try
-            {
-              const SDD<C> new_valuation = h_(cxt_, order_.nested(), arc.valuation());
-              sum_operands.add(SDD<C>(node.variable(), new_valuation, arc.successor()));
-            }
-            catch (interrupt<C>& i)
-            {
-              sum_operands.add(SDD<C>(node.variable(), i.result(), arc.successor()));
-              i.result() = dd::sum(cxt_.sdd_context(), std::move(sum_operands));
-              throw;
-            }
-          }
-          return dd::sum(cxt_.sdd_context(), std::move(sum_operands));
-        }
-      }
-      catch (top<C>& t)
-      {
-        evaluation_error<C> e(sdd_);
-        e.add_top(t);
-        throw e;
-      }
-    }
+//    /// @brief Hierarchical nodes case.
+//    SDD<C>
+//    operator()(const hierarchical_node<C>& node)
+//    const
+//    {
+//      try
+//      {
+//        if (h_.selector()) // partition won't change
+//        {
+//          dd::square_union<C, SDD<C>> su;
+//          su.reserve(node.size());
+//          for (const auto& arc : node)
+//          {
+//            try
+//            {
+//              const SDD<C> new_valuation = h_(cxt_, order_.nested(), arc.valuation());
+//              if (not new_valuation.empty())
+//              {
+//                su.add(arc.successor(), new_valuation);
+//              }
+//            }
+//            catch (interrupt<C>& i)
+//            {
+//              su.add(arc.successor(), i.result());
+//              i.result() = {node.variable(), su(cxt_.sdd_context())};
+//              throw;
+//            }
+//          }
+//          return {node.variable(), su(cxt_.sdd_context())};
+//        }
+//        else // partition will change
+//        {
+//          dd::sum_builder<C, SDD<C>> sum_operands;
+//          sum_operands.reserve(node.size());
+//          for (const auto& arc : node)
+//          {
+//            try
+//            {
+//              const SDD<C> new_valuation = h_(cxt_, order_.nested(), arc.valuation());
+//              sum_operands.add(SDD<C>(node.variable(), new_valuation, arc.successor()));
+//            }
+//            catch (interrupt<C>& i)
+//            {
+//              sum_operands.add(SDD<C>(node.variable(), i.result(), arc.successor()));
+//              i.result() = dd::sum(cxt_.sdd_context(), std::move(sum_operands));
+//              throw;
+//            }
+//          }
+//          return dd::sum(cxt_.sdd_context(), std::move(sum_operands));
+//        }
+//      }
+//      catch (top<C>& t)
+//      {
+//        evaluation_error<C> e(sdd_);
+//        e.add_top(t);
+//        throw e;
+//      }
+//    }
 
     /// @brief Error case: local only applies on hierarchical nodes.
     template <typename T>

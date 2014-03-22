@@ -86,15 +86,15 @@ TYPED_TEST(order_test, order_node_relative_order)
     ASSERT_TRUE(o.node("a") < o.node("c"));
     ASSERT_TRUE(o.node("b") < o.node("c"));
   }
-  {
-    const order o(order_builder("a", order_builder {"x", "y"}) << order_builder {"b"});
-    ASSERT_TRUE(o.node("a") < o.node("x"));
-    ASSERT_TRUE(o.node("a") < o.node("y"));
-    ASSERT_TRUE(o.node("x") < o.node("y"));
-    ASSERT_TRUE(o.node("a") < o.node("b"));
-    ASSERT_TRUE(o.node("x") < o.node("b"));
-    ASSERT_TRUE(o.node("y") < o.node("b"));
-  }
+//  {
+//    const order o(order_builder("a", order_builder {"x", "y"}) << order_builder {"b"});
+//    ASSERT_TRUE(o.node("a") < o.node("x"));
+//    ASSERT_TRUE(o.node("a") < o.node("y"));
+//    ASSERT_TRUE(o.node("x") < o.node("y"));
+//    ASSERT_TRUE(o.node("a") < o.node("b"));
+//    ASSERT_TRUE(o.node("x") < o.node("b"));
+//    ASSERT_TRUE(o.node("y") < o.node("b"));
+//  }
 }
 
 /*-------------------------------------------------------------------------------------------*/
@@ -117,38 +117,38 @@ TYPED_TEST(order_test, constructed_order)
     ASSERT_EQ("0", o.identifier().user());
     ASSERT_EQ("1", o.next().identifier().user());
     ASSERT_EQ("2", o.next().next().identifier().user());
- }
-  {
-    order o(order_builder().push("y", order_builder {"c"})
-                           .push("x", order_builder().push("z", order_builder {"b"}))
-                           .push("a"));
-
-    ASSERT_TRUE(o.contains(o.node("y").position(), o.node("c").position()));
-    ASSERT_TRUE(o.contains(o.node("x").position(), o.node("z").position()));
-    ASSERT_TRUE(o.contains(o.node("x").position(), o.node("b").position()));
-    ASSERT_TRUE(o.contains(o.node("z").position(), o.node("b").position()));
-
-    ASSERT_FALSE(o.contains(o.node("y").position(), o.node("b").position()));
-    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("c").position()));
-    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("y").position()));
-    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("x").position()));
-    ASSERT_FALSE(o.contains(o.node("y").position(), o.node("a").position()));
-    ASSERT_FALSE(o.contains(o.node("a").position(), o.node("a").position()));
-
-    ASSERT_FALSE(o.empty());
-    ASSERT_EQ("a", o.identifier().user());
-    ASSERT_TRUE(o.nested().empty());
-
-    ASSERT_FALSE(o.next().empty());
-    ASSERT_EQ("x", o.next().identifier().user());
-    ASSERT_FALSE(o.next().nested().empty());
-    ASSERT_EQ("z", o.next().nested().identifier().user());
-    ASSERT_TRUE(o.next().nested().next().empty());
-    ASSERT_FALSE(o.next().nested().nested().empty());
-    ASSERT_EQ("b", o.next().nested().nested().identifier().user());
-    ASSERT_TRUE(o.next().nested().nested().next().empty());
-    ASSERT_TRUE(o.next().nested().nested().nested().empty());
- }
+  }
+//  {
+//    order o(order_builder().push("y", order_builder {"c"})
+//                           .push("x", order_builder().push("z", order_builder {"b"}))
+//                           .push("a"));
+//
+//    ASSERT_TRUE(o.contains(o.node("y").position(), o.node("c").position()));
+//    ASSERT_TRUE(o.contains(o.node("x").position(), o.node("z").position()));
+//    ASSERT_TRUE(o.contains(o.node("x").position(), o.node("b").position()));
+//    ASSERT_TRUE(o.contains(o.node("z").position(), o.node("b").position()));
+//
+//    ASSERT_FALSE(o.contains(o.node("y").position(), o.node("b").position()));
+//    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("c").position()));
+//    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("y").position()));
+//    ASSERT_FALSE(o.contains(o.node("x").position(), o.node("x").position()));
+//    ASSERT_FALSE(o.contains(o.node("y").position(), o.node("a").position()));
+//    ASSERT_FALSE(o.contains(o.node("a").position(), o.node("a").position()));
+//
+//    ASSERT_FALSE(o.empty());
+//    ASSERT_EQ("a", o.identifier().user());
+//    ASSERT_TRUE(o.nested().empty());
+//
+//    ASSERT_FALSE(o.next().empty());
+//    ASSERT_EQ("x", o.next().identifier().user());
+//    ASSERT_FALSE(o.next().nested().empty());
+//    ASSERT_EQ("z", o.next().nested().identifier().user());
+//    ASSERT_TRUE(o.next().nested().next().empty());
+//    ASSERT_FALSE(o.next().nested().nested().empty());
+//    ASSERT_EQ("b", o.next().nested().nested().identifier().user());
+//    ASSERT_TRUE(o.next().nested().nested().next().empty());
+//    ASSERT_TRUE(o.next().nested().nested().nested().empty());
+// }
 }
 
 /*-------------------------------------------------------------------------------------------*/

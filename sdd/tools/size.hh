@@ -74,27 +74,27 @@ struct size_visitor
     }
   }
 
-  /// @brief Hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
-    {
-      std::size_t res = sizeof(typename SDD<C>::unique_type) // size of a ref_counted
-                      + n.size() * sizeof(typename hierarchical_node<C>::arc_type); // arcs
-      for (const auto& arc : n)
-      {
-        res += visit(*this, arc.valuation());
-        res += visit(*this, arc.successor());
-      }
-      return res;
-    }
-    else
-    {
-      return 0;
-    }
-  }
+//  /// @brief Hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
+//    {
+//      std::size_t res = sizeof(typename SDD<C>::unique_type) // size of a ref_counted
+//                      + n.size() * sizeof(typename hierarchical_node<C>::arc_type); // arcs
+//      for (const auto& arc : n)
+//      {
+//        res += visit(*this, arc.valuation());
+//        res += visit(*this, arc.successor());
+//      }
+//      return res;
+//    }
+//    else
+//    {
+//      return 0;
+//    }
+//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

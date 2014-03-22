@@ -43,10 +43,10 @@ public:
   bool
   selector() const noexcept = 0;
 
-  /// @brief Get the next homomorphism to apply from the user.
-  virtual
-  homomorphism<C>
-  operator()(const order<C>&, const SDD<C>&) const = 0;
+//  /// @brief Get the next homomorphism to apply from the user.
+//  virtual
+//  homomorphism<C>
+//  operator()(const order<C>&, const SDD<C>&) const = 0;
 
   /// @brief Get the next homomorphism to apply from the user.
   virtual
@@ -118,13 +118,13 @@ public:
     return selector_impl(h_, 0);
   }
 
-  /// @brief Get the next homomorphism to apply from the user.
-  homomorphism<C>
-  operator()(const order<C>& o, const SDD<C>& x)
-  const override
-  {
-    return h_(o, x);
-  }
+//  /// @brief Get the next homomorphism to apply from the user.
+//  homomorphism<C>
+//  operator()(const order<C>& o, const SDD<C>& x)
+//  const override
+//  {
+//    return h_(o, x);
+//  }
 
   /// @brief Get the next homomorphism to apply from the user.
   homomorphism<C>

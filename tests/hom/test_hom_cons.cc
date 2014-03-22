@@ -49,26 +49,26 @@ TYPED_TEST(hom_cons_test, construction)
     const homomorphism h2 = cons<conf>(o, values_type {0,1,2}, id);
     ASSERT_EQ(h1, h2);
   }
-  {
-    const homomorphism h1 = cons<conf>(o, one, id);
-    const homomorphism h2 = cons<conf>(o, one, id);
-    ASSERT_EQ(h1, h2);
-  }
+//  {
+//    const homomorphism h1 = cons<conf>(o, one, id);
+//    const homomorphism h2 = cons<conf>(o, one, id);
+//    ASSERT_EQ(h1, h2);
+//  }
   {
     const homomorphism h1 = cons<conf>(o, values_type {0,1,3}, id);
     const homomorphism h2 = cons<conf>(o, values_type {0,1,2}, id);
     ASSERT_NE(h1, h2);
   }
-  {
-    const homomorphism h1 = cons<conf>(o, one, id);
-    const homomorphism h2 = cons<conf>(o, zero, id);
-    ASSERT_NE(h1, h2);
-  }
-  {
-    const homomorphism h1 = cons<conf>(o, one, id);
-    const homomorphism h2 = cons<conf>(o, values_type {0,1,2}, id);
-    ASSERT_NE(h1, h2);
-  }
+//  {
+//    const homomorphism h1 = cons<conf>(o, one, id);
+//    const homomorphism h2 = cons<conf>(o, zero, id);
+//    ASSERT_NE(h1, h2);
+//  }
+//  {
+//    const homomorphism h1 = cons<conf>(o, one, id);
+//    const homomorphism h2 = cons<conf>(o, values_type {0,1,2}, id);
+//    ASSERT_NE(h1, h2);
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -85,11 +85,11 @@ TYPED_TEST(hom_cons_test, evaluation)
     const homomorphism h = cons<conf>(o, values_type {}, id);
     ASSERT_EQ(zero, h(o, one));
   }
-  {
-    order o(order_builder {"a"});
-    const homomorphism h = cons<conf>(o,  one, id);
-    ASSERT_EQ(SDD(0, one, one), h(o, one));
-  }
+//  {
+//    order o(order_builder {"a"});
+//    const homomorphism h = cons<conf>(o,  one, id);
+//    ASSERT_EQ(SDD(0, one, one), h(o, one));
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/

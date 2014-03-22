@@ -433,50 +433,50 @@ TYPED_TEST(hom_inductive_test, evaluation_flat)
     const auto h1 = inductive<conf>(id_prime<conf>());
     ASSERT_EQ(SDD(0, {0,1,2}, one), h1(o, SDD(0, {0,1,2}, one)));
   }
-  {
-    order o (order_builder {"1", "0"});
-    const auto h1 = inductive<conf>(consume<conf>());
-    ASSERT_EQ(one, h1(o, SDD(1, {0,1,2}, SDD(0, one, one))));
-  }
+//  {
+//    order o (order_builder {"1", "0"});
+//    const auto h1 = inductive<conf>(consume<conf>());
+//    ASSERT_EQ(one, h1(o, SDD(1, {0,1,2}, SDD(0, one, one))));
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(hom_inductive_test, evaluation_hierarchical)
-{
-  {
-    order o (order_builder {"0"});
-    const auto h1 = inductive<conf>(f0<conf>());
-    ASSERT_EQ(SDD(0, {1,2,3}, one), h1(o, SDD(0, {0,1,2}, one)));
-  }
-  {
-    order o (order_builder {"1", "0"});
-    const auto h0 = inductive<conf>(f0<conf>());
-    const auto h1 = inductive<conf>(f1<conf>());
-    ASSERT_NE(h0, h1);
-    ASSERT_EQ(       SDD(1, {1,2,3}, SDD(0, {2,3,4}, one))
-             , h0(o, SDD(1, {1,2,3}, SDD(0, {1,2,3}, one))));
-    ASSERT_EQ(       SDD(1, {3,4,5}, SDD(0, {1,2,3}, one))
-             , h1(o, SDD(1, {1,2,3}, SDD(0, {1,2,3}, one))));
-  }
-  {
-    order o (order_builder {"1", "0"});
-    const auto h1 = inductive<conf>(f0<conf>());
-    const auto h2 = inductive<conf>(f1<conf>());
-    ASSERT_NE(h1, h2);
-    ASSERT_EQ(             SDD(1, {2,3,4}, SDD(0, {1,2,3}, one))
-             , h2(o, h1(o, SDD(1, {0,1,2}, SDD(0, {0,1,2}, one)))));
-    ASSERT_EQ(             SDD(1, {2,3,4}, SDD(0, {1,2,3}, one))
-             , h1(o, h2(o, SDD(1, {0,1,2}, SDD(0, {0,1,2}, one)))));
-  }
-  {
-    order o (order_builder {"0", "1"});
-    const SDD s0 = SDD(1, {0}, SDD(0, {0}, one)) + SDD(1, {1}, SDD(0, {1}, one));
-    const SDD s1 = SDD(1, {1}, SDD(0, {0}, one)) + SDD(1, {2}, SDD(0, {1}, one));
-    const auto h1 = inductive<conf>(f0<conf>());
-    ASSERT_EQ(s1, h1(o, s0));
-  }
-}
+//TYPED_TEST(hom_inductive_test, evaluation_hierarchical)
+//{
+//  {
+//    order o (order_builder {"0"});
+//    const auto h1 = inductive<conf>(f0<conf>());
+//    ASSERT_EQ(SDD(0, {1,2,3}, one), h1(o, SDD(0, {0,1,2}, one)));
+//  }
+//  {
+//    order o (order_builder {"1", "0"});
+//    const auto h0 = inductive<conf>(f0<conf>());
+//    const auto h1 = inductive<conf>(f1<conf>());
+//    ASSERT_NE(h0, h1);
+//    ASSERT_EQ(       SDD(1, {1,2,3}, SDD(0, {2,3,4}, one))
+//             , h0(o, SDD(1, {1,2,3}, SDD(0, {1,2,3}, one))));
+//    ASSERT_EQ(       SDD(1, {3,4,5}, SDD(0, {1,2,3}, one))
+//             , h1(o, SDD(1, {1,2,3}, SDD(0, {1,2,3}, one))));
+//  }
+//  {
+//    order o (order_builder {"1", "0"});
+//    const auto h1 = inductive<conf>(f0<conf>());
+//    const auto h2 = inductive<conf>(f1<conf>());
+//    ASSERT_NE(h1, h2);
+//    ASSERT_EQ(             SDD(1, {2,3,4}, SDD(0, {1,2,3}, one))
+//             , h2(o, h1(o, SDD(1, {0,1,2}, SDD(0, {0,1,2}, one)))));
+//    ASSERT_EQ(             SDD(1, {2,3,4}, SDD(0, {1,2,3}, one))
+//             , h1(o, h2(o, SDD(1, {0,1,2}, SDD(0, {0,1,2}, one)))));
+//  }
+//  {
+//    order o (order_builder {"0", "1"});
+//    const SDD s0 = SDD(1, {0}, SDD(0, {0}, one)) + SDD(1, {1}, SDD(0, {1}, one));
+//    const SDD s1 = SDD(1, {1}, SDD(0, {0}, one)) + SDD(1, {2}, SDD(0, {1}, one));
+//    const auto h1 = inductive<conf>(f0<conf>());
+//    ASSERT_EQ(s1, h1(o, s0));
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -490,10 +490,10 @@ TYPED_TEST(hom_inductive_test, cut_path)
     const auto h0 = inductive<conf>(cut<conf>());
     ASSERT_EQ(zero, h0(order(order_builder {"a"}), SDD(0, {0}, one)));
   }
-  {
-    const auto h0 = inductive<conf>(cut<conf>());
-    ASSERT_EQ(zero, h0(order(order_builder {"a"}), SDD(0, one, one)));
-  }
+//  {
+//    const auto h0 = inductive<conf>(cut<conf>());
+//    ASSERT_EQ(zero, h0(order(order_builder {"a"}), SDD(0, one, one)));
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/

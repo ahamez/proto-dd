@@ -81,14 +81,14 @@ struct to_dot_visitor
     return addr;
   }
 
-  /// @brief Hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    std::cerr << "DOT export of hierarchical SDD not supported" << std::endl;
-    return nullptr;
-  }
+//  /// @brief Hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    std::cerr << "DOT export of hierarchical SDD not supported" << std::endl;
+//    return nullptr;
+//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

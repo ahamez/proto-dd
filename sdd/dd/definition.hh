@@ -30,9 +30,9 @@ namespace sdd {
 template <typename C>
 using flat_node = node<C, typename C::Values>;
 
-/// @brief All but SDD at the deepest level.
-template <typename C>
-using hierarchical_node = node<C, SDD<C>>;
+///// @brief All but SDD at the deepest level.
+//template <typename C>
+//using hierarchical_node = node<C, SDD<C>>;
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -46,8 +46,7 @@ private:
   ///
   /// This is the real recursive definition of an SDD: it can be a |0| or |1| terminal, or it
   /// can be a flat or an hierachical node.
-  typedef mem::variant<zero_terminal<C>, one_terminal<C>, proto_node<C>, hierarchical_node<C>>
-          data_type;
+  typedef mem::variant<zero_terminal<C>, one_terminal<C>, proto_node<C>> data_type;
 
 public:
 
@@ -63,9 +62,9 @@ public:
   static constexpr std::size_t proto_node_index
     = data_type::template index_for_type<proto_node<C>>();
 
-  /// @internal
-  static constexpr std::size_t hierarchical_node_index
-    = data_type::template index_for_type<hierarchical_node<C>>();
+//  /// @internal
+//  static constexpr std::size_t hierarchical_node_index
+//    = data_type::template index_for_type<hierarchical_node<C>>();
 
   /// @internal
   /// @brief A unified and canonized SDD, meant to be stored in a unique table.
@@ -141,17 +140,17 @@ public:
     , ptr_(create_node(var, val, succ))
   {}
 
-  /// @internal
-  /// @brief Construct a hierarchical SDD.
-  /// @param var  The SDD's variable.
-  /// @param val  The SDD's valuation, an SDD in this case.
-  /// @param succ The SDD's successor.
-  ///
-  /// O(1).
-  SDD(variable_type var, const SDD& val, const SDD& succ)
-    : env_(dd::empty_proto_env<C>())
-    , ptr_(create_node(var, val, succ))
-  {}
+//  /// @internal
+//  /// @brief Construct a hierarchical SDD.
+//  /// @param var  The SDD's variable.
+//  /// @param val  The SDD's valuation, an SDD in this case.
+//  /// @param succ The SDD's successor.
+//  ///
+//  /// O(1).
+//  SDD(variable_type var, const SDD& val, const SDD& succ)
+//    : env_(dd::empty_proto_env<C>())
+//    , ptr_(create_node(var, val, succ))
+//  {}
 
   /// @brief Construct an SDD with an order.
   template <typename Initializer>
@@ -172,7 +171,8 @@ public:
     }
     else // hierarchical
     {
-      ptr_ = create_node(o.variable(), SDD(o.nested(), init), SDD(o.next(), init));
+//      ptr_ = create_node(o.variable(), SDD(o.nested(), init), SDD(o.next(), init));
+      assert(false);
     }
   }
 
@@ -375,25 +375,25 @@ private:
     }
   }
 
-  /// @internal
-  /// @brief Helper function to unify a node, hierarchical, from an alpha.
-  ///
-  /// O(n) where n is the number of arcs in the builder.
-  static
-  unique_type&
-  unify_node(variable_type var, dd::alpha_builder<C, SDD>&& builder)
-  {
-    // Will be erased by the unicity table, either it's an already existing node or a deletion
-    // is requested by ptr.
-    // Note that the alpha function is allocated right behind the node, thus extra care must be
-    // taken. This is also why we use Boost.Intrusive in order to be able to manage memory
-    // exactly the way we want.
-    auto& ut = global<C>().sdd_unique_table;
-    char* addr = ut.allocate(builder.size_to_allocate());
-    unique_type* u =
-      new (addr) unique_type(mem::construct<node<C, SDD>>(), var, builder);
-    return ut(u);
-  }
+//  /// @internal
+//  /// @brief Helper function to unify a node, hierarchical, from an alpha.
+//  ///
+//  /// O(n) where n is the number of arcs in the builder.
+//  static
+//  unique_type&
+//  unify_node(variable_type var, dd::alpha_builder<C, SDD>&& builder)
+//  {
+//    // Will be erased by the unicity table, either it's an already existing node or a deletion
+//    // is requested by ptr.
+//    // Note that the alpha function is allocated right behind the node, thus extra care must be
+//    // taken. This is also why we use Boost.Intrusive in order to be able to manage memory
+//    // exactly the way we want.
+//    auto& ut = global<C>().sdd_unique_table;
+//    char* addr = ut.allocate(builder.size_to_allocate());
+//    unique_type* u =
+//      new (addr) unique_type(mem::construct<node<C, SDD>>(), var, builder);
+//    return ut(u);
+//  }
 
   /// @internal
   /// @brief Helper function to unify a node, flat, from an alpha.
@@ -516,17 +516,17 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
   typename SDD<C>::variable_type lhs_variable;
   typename SDD<C>::variable_type rhs_variable;
 
-  // we must convert to the right type before comparing variables
-  if (lhs_index == SDD<C>::proto_node_index)
-  {
-    lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
-    rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
-  }
-  else
-  {
-    lhs_variable = mem::variant_cast<hierarchical_node<C>>(*lhs).variable();
-    rhs_variable = mem::variant_cast<hierarchical_node<C>>(*rhs).variable();
-  }
+//  // we must convert to the right type before comparing variables
+//  if (lhs_index == SDD<C>::proto_node_index)
+//  {
+  lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
+  rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
+//  }
+//  else
+//  {
+//    lhs_variable = mem::variant_cast<hierarchical_node<C>>(*lhs).variable();
+//    rhs_variable = mem::variant_cast<hierarchical_node<C>>(*rhs).variable();
+//  }
 
   if (lhs_variable != rhs_variable)
   {

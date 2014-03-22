@@ -81,29 +81,29 @@ struct expression_post_visitor
     : eval(e), valuation(v), target(t)
   {}
 
-  void
-  operator()( const hierarchical_node<C>& n
-            , yield_type<C>& yield
-            , const order<C>& o
-            , const std::shared_ptr<app_stack<C>>& app, const std::shared_ptr<sdd_stack<C>>& res
-            , order_positions_iterator cit, order_positions_iterator end)
-  const
-  {
-    namespace ph = std::placeholders;
-    for (const auto& arc : n)
-    {
-      const auto local_res = std::make_shared<sdd_stack<C>>(arc.successor(), res);
-      const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), app);
-      coro<C> gen( std::bind( expression_post<C>, ph::_1, *this, arc.valuation(), o.nested()
-                            , local_app, local_res, cit, end)
-                 , bcoro::attributes(coro_fpu<C::expression_preserve_fpu_registers>::value));
-      while (gen)
-      {
-        yield(SDD<C>(o.variable(), gen.get(), local_res->sdd));
-        gen();
-      }
-    }
-  }
+//  void
+//  operator()( const hierarchical_node<C>& n
+//            , yield_type<C>& yield
+//            , const order<C>& o
+//            , const std::shared_ptr<app_stack<C>>& app, const std::shared_ptr<sdd_stack<C>>& res
+//            , order_positions_iterator cit, order_positions_iterator end)
+//  const
+//  {
+//    namespace ph = std::placeholders;
+//    for (const auto& arc : n)
+//    {
+//      const auto local_res = std::make_shared<sdd_stack<C>>(arc.successor(), res);
+//      const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), app);
+//      coro<C> gen( std::bind( expression_post<C>, ph::_1, *this, arc.valuation(), o.nested()
+//                            , local_app, local_res, cit, end)
+//                 , bcoro::attributes(coro_fpu<C::expression_preserve_fpu_registers>::value));
+//      while (gen)
+//      {
+//        yield(SDD<C>(o.variable(), gen.get(), local_res->sdd));
+//        gen();
+//      }
+//    }
+//  }
 
   void
   operator()( const flat_node<C>& n
@@ -243,95 +243,95 @@ struct expression_pre
     : cxt_(cxt), target_(target), eval_(eval), valuation_()
   {}
 
-  /// @brief Evaluation on hierarchical nodes.
-  SDD<C>
-  operator()( const hierarchical_node<C>& node, const SDD<C>& s
-            , const order<C>& o
-            , const std::shared_ptr<app_stack<C>>& app, const std::shared_ptr<res_stack<C>>& res
-            , order_positions_iterator cit, order_positions_iterator end)
-  const
-  {
-    // Shortcut to the SDD evaluation context.
-    auto& sdd_cxt = cxt_.sdd_context();
-
-    if (not o.contains(o.position(), target_)) // target is not in the nested hierarchy
-    {
-      // Check if the nested levels contain any of the variables needed to update the evaluator.
-      const bool nested_variables = std::any_of( cit, end
-                                               , [&](order_position_type pos)
-                                                    {return o.contains(o.position(), pos);});
-
-      if (not nested_variables)
-      {
-        // We have no interest in this level, thus the visitor is propagated to the next level.
-        dd::square_union<C, SDD<C>> su;
-        su.reserve(node.size());
-        for (const auto& arc : node)
-        {
-          const SDD<C> successor = visit_self(*this, arc.successor(), o.next(), app, res, cit, end);
-          su.add(successor, arc.valuation());
-        }
-        return SDD<C>(o.variable(), su(sdd_cxt));
-      }
-      else
-      {
-        // We are interested in this level, but the target is not nested into it. Thus, we won't
-        // modiffy the current level: a square union is sufficient.
-        dd::square_union<C, SDD<C>> su;
-        su.reserve(node.size());
-        try
-        {
-          for (const auto& arc : node)
-          {
-            const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), app);
-            const auto local_res = std::make_shared<res_stack<C>>(res);
-            visit_self(*this, arc.valuation(), o.nested(), local_app, local_res, cit, end);
-            assert(not local_res->result.empty() && "Invalid empty successor result");
-            su.add(dd::sum<C>(sdd_cxt, std::move(local_res->result)), arc.valuation());
-          }
-          return SDD<C>(o.variable(), su(sdd_cxt));
-        }
-        catch (top<C>& t)
-        {
-          evaluation_error<C> e(s);
-          e.add_top(t);
-          throw e;
-        }
-      }
-    }
-    else // target is contained in this hierarchy
-    {
-      namespace ph = std::placeholders;
-      dd::sum_builder<C, SDD<C>> operands;
-      operands.reserve(node.size());
-
-      for (const auto& arc : node)
-      {
-        const auto local_res = std::make_shared<sdd_stack<C>>(arc.successor(), nullptr);
-        const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), nullptr);
-        coro<C> gen( std::bind( expression_post<C>, ph::_1
-                              , expression_post_visitor<C>(eval_, valuation_, target_)
-                              , arc.valuation(), o.nested(), local_app, local_res, cit, end)
-                   , bcoro::attributes(coro_fpu<C::expression_preserve_fpu_registers>::value));
-        while(gen)
-        {
-          assert(not local_res->sdd.empty() && "Invalid |0| successor result");
-          operands.add(SDD<C>(o.variable(), /*nested*/ gen.get(), /*successor*/ local_res->sdd));
-          gen();
-        }
-      }
-      try
-      {
-        return dd::sum<C>(sdd_cxt, std::move(operands));
-      }
-      catch (top<C>& t)
-      {
-        evaluation_error<C> e(s);
-        e.add_top(t);
-        throw e;
-      }
-    }
-  }
+//  /// @brief Evaluation on hierarchical nodes.
+//  SDD<C>
+//  operator()( const hierarchical_node<C>& node, const SDD<C>& s
+//            , const order<C>& o
+//            , const std::shared_ptr<app_stack<C>>& app, const std::shared_ptr<res_stack<C>>& res
+//            , order_positions_iterator cit, order_positions_iterator end)
+//  const
+//  {
+//    // Shortcut to the SDD evaluation context.
+//    auto& sdd_cxt = cxt_.sdd_context();
+//
+//    if (not o.contains(o.position(), target_)) // target is not in the nested hierarchy
+//    {
+//      // Check if the nested levels contain any of the variables needed to update the evaluator.
+//      const bool nested_variables = std::any_of( cit, end
+//                                               , [&](order_position_type pos)
+//                                                    {return o.contains(o.position(), pos);});
+//
+//      if (not nested_variables)
+//      {
+//        // We have no interest in this level, thus the visitor is propagated to the next level.
+//        dd::square_union<C, SDD<C>> su;
+//        su.reserve(node.size());
+//        for (const auto& arc : node)
+//        {
+//          const SDD<C> successor = visit_self(*this, arc.successor(), o.next(), app, res, cit, end);
+//          su.add(successor, arc.valuation());
+//        }
+//        return SDD<C>(o.variable(), su(sdd_cxt));
+//      }
+//      else
+//      {
+//        // We are interested in this level, but the target is not nested into it. Thus, we won't
+//        // modiffy the current level: a square union is sufficient.
+//        dd::square_union<C, SDD<C>> su;
+//        su.reserve(node.size());
+//        try
+//        {
+//          for (const auto& arc : node)
+//          {
+//            const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), app);
+//            const auto local_res = std::make_shared<res_stack<C>>(res);
+//            visit_self(*this, arc.valuation(), o.nested(), local_app, local_res, cit, end);
+//            assert(not local_res->result.empty() && "Invalid empty successor result");
+//            su.add(dd::sum<C>(sdd_cxt, std::move(local_res->result)), arc.valuation());
+//          }
+//          return SDD<C>(o.variable(), su(sdd_cxt));
+//        }
+//        catch (top<C>& t)
+//        {
+//          evaluation_error<C> e(s);
+//          e.add_top(t);
+//          throw e;
+//        }
+//      }
+//    }
+//    else // target is contained in this hierarchy
+//    {
+//      namespace ph = std::placeholders;
+//      dd::sum_builder<C, SDD<C>> operands;
+//      operands.reserve(node.size());
+//
+//      for (const auto& arc : node)
+//      {
+//        const auto local_res = std::make_shared<sdd_stack<C>>(arc.successor(), nullptr);
+//        const auto local_app = std::make_shared<app_stack<C>>(arc.successor(), o.next(), nullptr);
+//        coro<C> gen( std::bind( expression_post<C>, ph::_1
+//                              , expression_post_visitor<C>(eval_, valuation_, target_)
+//                              , arc.valuation(), o.nested(), local_app, local_res, cit, end)
+//                   , bcoro::attributes(coro_fpu<C::expression_preserve_fpu_registers>::value));
+//        while(gen)
+//        {
+//          assert(not local_res->sdd.empty() && "Invalid |0| successor result");
+//          operands.add(SDD<C>(o.variable(), /*nested*/ gen.get(), /*successor*/ local_res->sdd));
+//          gen();
+//        }
+//      }
+//      try
+//      {
+//        return dd::sum<C>(sdd_cxt, std::move(operands));
+//      }
+//      catch (top<C>& t)
+//      {
+//        evaluation_error<C> e(s);
+//        e.add_top(t);
+//        throw e;
+//      }
+//    }
+//  }
 
   /// @brief Evaluation on flat nodes.
   SDD<C>

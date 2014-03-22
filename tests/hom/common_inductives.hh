@@ -29,12 +29,12 @@ struct targeted_incr
     return var != var_;
   }
 
-  sdd::homomorphism<C>
-  operator()(const sdd::order<C>& o, const sdd::SDD<C>& x)
-  const
-  {
-    return sdd::cons(o, x, sdd::inductive<C>(*this));
-  }
+//  sdd::homomorphism<C>
+//  operator()(const sdd::order<C>& o, const sdd::SDD<C>& x)
+//  const
+//  {
+//    return sdd::cons(o, x, sdd::inductive<C>(*this));
+//  }
 
   template <typename T>
   sdd::homomorphism<C>
@@ -119,12 +119,12 @@ struct incr
     return false;
   }
 
-  sdd::homomorphism<C>
-  operator()(const sdd::order<C>& o, const sdd::SDD<C>& x)
-  const
-  {
-    return cons(o, x, inductive<C>(*this));
-  }
+//  sdd::homomorphism<C>
+//  operator()(const sdd::order<C>& o, const sdd::SDD<C>& x)
+//  const
+//  {
+//    return cons(o, x, inductive<C>(*this));
+//  }
 
   sdd::homomorphism<C>
   operator()(const sdd::order<C>& o, const values_type& val)
@@ -189,12 +189,12 @@ struct targeted_noop
     return true;
   }
 
-  sdd::homomorphism<C>
-  operator()(const sdd::order<C>& o, const sdd::SDD<C>& val)
-  const
-  {
-    return cons(o, val, sdd::id<C>());
-  }
+//  sdd::homomorphism<C>
+//  operator()(const sdd::order<C>& o, const sdd::SDD<C>& val)
+//  const
+//  {
+//    return cons(o, val, sdd::id<C>());
+//  }
 
   sdd::homomorphism<C>
   operator()(const sdd::order<C>& o, const values_type& val)
@@ -243,12 +243,12 @@ struct ind
     return false;
   }
 
-  sdd::homomorphism<C>
-  operator()(const sdd::order<C>&, const sdd::SDD<C>&)
-  const
-  {
-    return sdd::id<C>();
-  }
+//  sdd::homomorphism<C>
+//  operator()(const sdd::order<C>&, const sdd::SDD<C>&)
+//  const
+//  {
+//    return sdd::id<C>();
+//  }
 
   sdd::homomorphism<C>
   operator()(const sdd::order<C>&, const typename C::Values&)

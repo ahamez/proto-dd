@@ -36,8 +36,11 @@ struct LIBSDD_ATTRIBUTE_PACKED sum_op_impl
   /// Also, a lot of tests permit to break loops as soon as possible.
   template <typename InputIterator, typename NodeType>
   static
-  typename std::enable_if< std::is_same<NodeType, hierarchical_node<C>>::value
-                         or not values::values_traits<typename C::Values>::fast_iterable
+//  typename std::enable_if< std::is_same<NodeType, hierarchical_node<C>>::value
+//                         or not values::values_traits<typename C::Values>::fast_iterable
+//                         , SDD<C>>::type
+  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
+                         and not values::values_traits<typename C::Values>::fast_iterable
                          , SDD<C>>::type
   work(InputIterator begin, InputIterator end, context<C>& cxt)
   {

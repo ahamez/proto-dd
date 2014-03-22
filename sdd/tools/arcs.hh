@@ -60,21 +60,21 @@ struct arcs_visitor
     }
   }
 
-  /// @brief Hierarchical SDD.
-  result_type
-  operator()(const hierarchical_node<C>& n)
-  const
-  {
-    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
-    {
-      map_[n.size()].second += 1;
-      for (const auto& arc : n)
-      {
-        visit(*this, arc.valuation());
-        visit(*this, arc.successor());
-      }
-    }
-  }
+//  /// @brief Hierarchical SDD.
+//  result_type
+//  operator()(const hierarchical_node<C>& n)
+//  const
+//  {
+//    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
+//    {
+//      map_[n.size()].second += 1;
+//      for (const auto& arc : n)
+//      {
+//        visit(*this, arc.valuation());
+//        visit(*this, arc.successor());
+//      }
+//    }
+//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

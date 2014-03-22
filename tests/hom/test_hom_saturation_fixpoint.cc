@@ -76,20 +76,20 @@ TYPED_TEST(hom_saturation_fixpoint_test, evaluation)
     ASSERT_EQ( SDD(2, {0}, SDD(1, {0,2}, SDD(0, {0,1,2}, one)))
              , h(o, s0));
   }
-  {
-    order o(order_builder().push("c").push("b", order_builder {"x"}).push("a"));
-    SDD s0(2, {0}, SDD(1, SDD(0, {0}, one), SDD(0, {0}, one)));
-
-    const auto f = fixpoint(sum<conf>(o, {inductive<conf>(targeted_incr<conf>("c", 1)), id}));
-    const std::vector<homomorphism> g{};
-    const auto l = local("b", o, sum<conf>(o, {inductive<conf>(targeted_incr<conf>("x", 2)), id}));
-    const auto h = saturation_fixpoint(1, f, g.begin(), g.end(), l);
-
-    const auto r = fixpoint(sum<conf>(o, { inductive<conf>(targeted_incr<conf>("c", 1))
-                                        , local("b", o, inductive<conf>(targeted_incr<conf>("x", 2)))
-                                        , id}));
-    ASSERT_EQ(r(o, s0), h(o, s0));
-  }
+//  {
+//    order o(order_builder().push("c").push("b", order_builder {"x"}).push("a"));
+//    SDD s0(2, {0}, SDD(1, SDD(0, {0}, one), SDD(0, {0}, one)));
+//
+//    const auto f = fixpoint(sum<conf>(o, {inductive<conf>(targeted_incr<conf>("c", 1)), id}));
+//    const std::vector<homomorphism> g{};
+//    const auto l = local("b", o, sum<conf>(o, {inductive<conf>(targeted_incr<conf>("x", 2)), id}));
+//    const auto h = saturation_fixpoint(1, f, g.begin(), g.end(), l);
+//
+//    const auto r = fixpoint(sum<conf>(o, { inductive<conf>(targeted_incr<conf>("c", 1))
+//                                        , local("b", o, inductive<conf>(targeted_incr<conf>("x", 2)))
+//                                        , id}));
+//    ASSERT_EQ(r(o, s0), h(o, s0));
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/

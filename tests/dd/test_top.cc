@@ -62,33 +62,33 @@ TYPED_TEST(top_test, sum_terminal)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    ASSERT_THROW(x + one, sdd::top<conf>);
-    try
-    {
-      x + one;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    SDD y('a', one, one);
-    ASSERT_THROW(x + y, sdd::top<conf>);
-    try
-    {
-      x + y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    ASSERT_THROW(x + one, sdd::top<conf>);
+//    try
+//    {
+//      x + one;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    SDD y('a', one, one);
+//    ASSERT_THROW(x + y, sdd::top<conf>);
+//    try
+//    {
+//      x + y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -123,65 +123,65 @@ TYPED_TEST(top_test, sum)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x1('x', SDD('a', {0}, one), one);
-    SDD x2('x', SDD('b', {0}, one), one);
-    ASSERT_THROW(x1 + x2, sdd::top<conf>);
-    try
-    {
-      x1 + x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x1('x', one, one);
-    SDD x2('y', one, one);
-    ASSERT_THROW(x1 + x2, sdd::top<conf>);
-    try
-    {
-      x1 + x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x1('x', SDD('a', {0}, one), one);
+//    SDD x2('x', SDD('b', {0}, one), one);
+//    ASSERT_THROW(x1 + x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 + x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x1('x', one, one);
+//    SDD x2('y', one, one);
+//    ASSERT_THROW(x1 + x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 + x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(top_test, sum_different_node_types)
-{
-  SDD x('a', {0}, one);
-  SDD y('a', SDD('b', {0}, one), one);
-
-  ASSERT_THROW(x + y, sdd::top<conf>);
-  try
-  {
-    x + y;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-
-  ASSERT_THROW(y + x, sdd::top<conf>);
-  try
-  {
-    y + x;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-}
+//TYPED_TEST(top_test, sum_different_node_types)
+//{
+//  SDD x('a', {0}, one);
+//  SDD y('a', SDD('b', {0}, one), one);
+//
+//  ASSERT_THROW(x + y, sdd::top<conf>);
+//  try
+//  {
+//    x + y;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//
+//  ASSERT_THROW(y + x, sdd::top<conf>);
+//  try
+//  {
+//    y + x;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -213,33 +213,33 @@ TYPED_TEST(top_test, difference_terminal)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    ASSERT_THROW(x - one, sdd::top<conf>);
-    try
-    {
-      x - one;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    SDD y('a', one, one);
-    ASSERT_THROW(x - y, sdd::top<conf>);
-    try
-    {
-      x - y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    ASSERT_THROW(x - one, sdd::top<conf>);
+//    try
+//    {
+//      x - one;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    SDD y('a', one, one);
+//    ASSERT_THROW(x - y, sdd::top<conf>);
+//    try
+//    {
+//      x - y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 
@@ -275,66 +275,66 @@ TYPED_TEST(top_test, difference)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x1('x', SDD('a', {0}, one), one);
-    SDD x2('x', SDD('b', {0}, one), one);
-    ASSERT_THROW(x1 - x2, sdd::top<conf>);
-    try
-    {
-      x1 - x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x1('x', one, one);
-    SDD x2('y', one, one);
-    ASSERT_THROW(x1 - x2, sdd::top<conf>);
-    try
-    {
-      x1 - x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x1('x', SDD('a', {0}, one), one);
+//    SDD x2('x', SDD('b', {0}, one), one);
+//    ASSERT_THROW(x1 - x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 - x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x1('x', one, one);
+//    SDD x2('y', one, one);
+//    ASSERT_THROW(x1 - x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 - x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(top_test, difference_different_node_types)
-{
-
-  SDD x('a', {0}, one);
-  SDD y('a', SDD('b', {0}, one), one);
-
-  ASSERT_THROW(x - y, sdd::top<conf>);
-  try
-  {
-    x - y;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-
-  ASSERT_THROW(y - x, sdd::top<conf>);
-  try
-  {
-    y - x;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-}
+//TYPED_TEST(top_test, difference_different_node_types)
+//{
+//
+//  SDD x('a', {0}, one);
+//  SDD y('a', SDD('b', {0}, one), one);
+//
+//  ASSERT_THROW(x - y, sdd::top<conf>);
+//  try
+//  {
+//    x - y;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//
+//  ASSERT_THROW(y - x, sdd::top<conf>);
+//  try
+//  {
+//    y - x;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -366,33 +366,33 @@ TYPED_TEST(top_test, intersection_terminal)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    ASSERT_THROW(x & one, sdd::top<conf>);
-    try
-    {
-      x & one;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', SDD('b', {1}, one), one);
-    SDD y('a', one, one);
-    ASSERT_THROW(x & y, sdd::top<conf>);
-    try
-    {
-      x & y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    ASSERT_THROW(x & one, sdd::top<conf>);
+//    try
+//    {
+//      x & one;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', SDD('b', {1}, one), one);
+//    SDD y('a', one, one);
+//    ASSERT_THROW(x & y, sdd::top<conf>);
+//    try
+//    {
+//      x & y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 
@@ -428,65 +428,65 @@ TYPED_TEST(top_test, intersection)
       ASSERT_NE(nullptr, t.what());
     }
   }
-  {
-    SDD x1('x', SDD('a', {0}, one), one);
-    SDD x2('x', SDD('b', {0}, one), one);
-    ASSERT_THROW(x1 & x2, sdd::top<conf>);
-    try
-    {
-      x1 & x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x1('x', one, one);
-    SDD x2('y', one, one);
-    ASSERT_THROW(x1 & x2, sdd::top<conf>);
-    try
-    {
-      x1 & x2;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//  {
+//    SDD x1('x', SDD('a', {0}, one), one);
+//    SDD x2('x', SDD('b', {0}, one), one);
+//    ASSERT_THROW(x1 & x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 & x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x1('x', one, one);
+//    SDD x2('y', one, one);
+//    ASSERT_THROW(x1 & x2, sdd::top<conf>);
+//    try
+//    {
+//      x1 & x2;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(top_test, intersection_different_node_types)
-{
-
-  SDD x('a', {0}, one);
-  SDD y('a', SDD('b', {0}, one), one);
-
-  ASSERT_THROW(x & y, sdd::top<conf>);
-  try
-  {
-    x & y;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-
-  ASSERT_THROW(y & x, sdd::top<conf>);
-  try
-  {
-    y & x;
-  }
-  catch(sdd::top<conf>& t)
-  {
-    ASSERT_NE(t.lhs(), t.rhs());
-    ASSERT_NE(nullptr, t.what());
-  }
-}
+//TYPED_TEST(top_test, intersection_different_node_types)
+//{
+//
+//  SDD x('a', {0}, one);
+//  SDD y('a', SDD('b', {0}, one), one);
+//
+//  ASSERT_THROW(x & y, sdd::top<conf>);
+//  try
+//  {
+//    x & y;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//
+//  ASSERT_THROW(y & x, sdd::top<conf>);
+//  try
+//  {
+//    y & x;
+//  }
+//  catch(sdd::top<conf>& t)
+//  {
+//    ASSERT_NE(t.lhs(), t.rhs());
+//    ASSERT_NE(nullptr, t.what());
+//  }
+//}
 
 /*------------------------------------------------------------------------------------------------*/

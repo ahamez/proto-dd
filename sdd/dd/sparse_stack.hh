@@ -3,11 +3,13 @@
 
 #include <algorithm> // copy
 #include <cstdint>   // uint32_t
+#include <deque>
+#include <limits>    // numeric_limits
 #include <numeric>   // accumulate
-#include <vector>
 
 #include <boost/iterator/iterator_facade.hpp>
 
+#include "sdd/dd/sparse_value.hh"
 #include "sdd/util/hash.hh"
 
 namespace sdd { namespace dd {
@@ -369,9 +371,7 @@ public:
   using value_type = typename T::value_type;
 
   /// @brief The container of entries.
-  ///
-  /// Use a std::deque instead?
-  using container_type = std::vector<sparse_stack_entry<value_type>>;
+  using container_type = std::deque<sparse_stack_entry<value_type>>;
 
   using bounded_stack = bounded_sparse_stack<T>;
 
@@ -400,9 +400,7 @@ public:
   /// @brief Default constructor
   sparse_stack()
     : values_(), size_(0)
-  {
-    std::cout << "values_.size() : " << values_.size() << std::endl;
-  }
+  {}
 
   /// @brief Copy constructor.
   sparse_stack(const sparse_stack&) = default;
@@ -422,13 +420,6 @@ public:
   const noexcept
   {
     return values_.empty();
-  }
-
-  /// @brief Request for allocation of additional memory.
-  void
-  reserve(std::size_t size)
-  {
-    values_.reserve(size);
   }
 
   /// @brief Push a value on the top of the stack.

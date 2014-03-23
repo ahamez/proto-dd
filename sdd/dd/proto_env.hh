@@ -4,7 +4,7 @@
 //#include <vector>
 
 #include "sdd/dd/definition_fwd.hh"
-#include "sdd/dd/sparse_stack.hh"
+#include "sdd/dd/stack.hh"
 #include "sdd/mem/ptr.hh"
 #include "sdd/mem/ref_counted.hh"
 #include "sdd/util/hash.hh"
@@ -26,33 +26,32 @@ namespace sdd { namespace dd {
 template <typename Value, typename Successor>
 struct internal_proto_env
 {
-//  using value_type      = Value;
-//  using successor_type  = Successor;
-//
-//  using value_stack_type     = sparse_stack<sparse_value<value_type>>;
-//  using successor_stack_type = sparse_stack<sparse_value<successor_type>>;
-//
-//  const unsigned int level;
-//  const value_stack_type values;
-//  const successor_stack_type successors;
+  using value_type      = Value;
+  using successor_type  = Successor;
+
+  using value_stack_type     = stack<value_type>;
+  using successor_stack_type = stack<successor_type>;
+
+  const unsigned int level;
+  const value_stack_type values;
+  const successor_stack_type successors;
 
   /// @brief Default constructor.
   ///
   /// Create an empty environment.
-//  internal_proto_env()
-//    : level(0), values(), successors()
-//  {}
+  internal_proto_env()
+    : level(0), values(), successors()
+  {}
 
-//  internal_proto_env(unsigned int l, value_stack_type&& v, successor_stack_type&& s)
-//    : level(l), values(std::move(v)), successors(std::move(s))
-//  {}
+  internal_proto_env(unsigned int l, value_stack_type&& v, successor_stack_type&& s)
+    : level(l), values(std::move(v)), successors(std::move(s))
+  {}
 
   bool
   operator==(const internal_proto_env& other)
   const noexcept
   {
-//    return level == other.level and values == other.values and successors == other.successors;
-    return true;
+    return level == other.level and values == other.values and successors == other.successors;
   }
 };
 
@@ -72,8 +71,8 @@ public:
   using unique_type = mem::ref_counted<data_type>;
   using ptr_type    = mem::ptr<unique_type>;
 
-//  using value_stack_type     = typename data_type::value_stack_type;
-//  using successor_stack_type = typename data_type::successor_stack_type;
+  using value_stack_type     = typename data_type::value_stack_type;
+  using successor_stack_type = typename data_type::successor_stack_type;
 
 private:
 
@@ -86,9 +85,9 @@ public:
   proto_env(proto_env&&) noexcept                 = default;
   proto_env& operator=(proto_env&&) noexcept      = default;
 
-//  env(unsigned int level, value_stack_type&& v, successor_stack_type&& s)
-//    : ptr_(mk_ptr(level, std::move(v), std::move(s)))
-//  {}
+  proto_env(unsigned int level, value_stack_type&& v, successor_stack_type&& s)
+    : ptr_(mk_ptr(level, std::move(v), std::move(s)))
+  {}
 
   proto_env(ptr_type ptr)
   noexcept
@@ -131,39 +130,39 @@ public:
     return ptr_ == empty_ptr();
   }
 
-//  unsigned int
-//  level()
-//  const noexcept
-//  {
-//    return ptr_->data().level;
-//  }
+  unsigned int
+  level()
+  const noexcept
+  {
+    return ptr_->data().level;
+  }
 
-//  const value_stack_type&
-//  value_stack()
-//  const noexcept
-//  {
-//    return ptr_->data().values;
-//  }
+  const value_stack_type&
+  value_stack()
+  const noexcept
+  {
+    return ptr_->data().values;
+  }
 
-//  const successor_stack_type&
-//  successor_stack()
-//  const noexcept
-//  {
-//    return ptr_->data().successors;
-//  }
+  const successor_stack_type&
+  successor_stack()
+  const noexcept
+  {
+    return ptr_->data().successors;
+  }
 
 private:
 
   static
   ptr_type
-//  mk_ptr(unsigned level, value_stack_type&& v, successor_stack_type&& s)
-  mk_ptr()
+  mk_ptr(unsigned level, value_stack_type&& v, successor_stack_type&& s)
+//  mk_ptr()
   {
     auto& ut = global<C>().proto_unique_table;
     char* addr = ut.allocate(0);
     unique_type* u =
-//      new (addr) unique_type(level, std::move(v), std::move(s));
-      new (addr) unique_type();
+      new (addr) unique_type(level, std::move(v), std::move(s));
+//      new (addr) unique_type();
     return ptr_type(ut(u));
   }
 }; // class proto_env;

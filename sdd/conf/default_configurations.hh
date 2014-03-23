@@ -4,7 +4,6 @@
 #include <cstdint> // uint16_t, uint32_t
 #include <string>
 
-#include "sdd/dd/sparse_value.hh"
 #include "sdd/values/bitset.hh"
 #include "sdd/values/flat_set.hh"
 
@@ -133,19 +132,6 @@ struct conf2
   using Identifier = unsigned int;
   using Values     = values::flat_set<unsigned int>;
 };
-
-/*------------------------------------------------------------------------------------------------*/
-
-namespace dd {
-
-template <>
-struct sparse_value<unsigned int>
-{
-  using value_type = unsigned int;
-  static constexpr value_type default_value() noexcept {return 0;}
-};
-
-} // namespace dd
 
 /*------------------------------------------------------------------------------------------------*/
 

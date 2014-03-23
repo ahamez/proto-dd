@@ -428,7 +428,7 @@ bool
 operator==(const SDD<C>& lhs, const SDD<C>& rhs)
 noexcept
 {
-  return lhs.ptr() == rhs.ptr();
+  return lhs.ptr() == rhs.ptr() and lhs.env() == rhs.env();
 }
 
 /// @brief   Inequality of two SDD.
@@ -441,7 +441,7 @@ bool
 operator!=(const SDD<C>& lhs, const SDD<C>& rhs)
 noexcept
 {
-  return not (lhs.ptr() == rhs.ptr());
+  return not (lhs == rhs);
 }
 
 /// @brief   Comparison of two SDD.
@@ -454,7 +454,18 @@ bool
 operator<(const SDD<C>& lhs, const SDD<C>& rhs)
 noexcept
 {
-  return lhs.ptr() < rhs.ptr();
+  if (lhs.ptr() < rhs.ptr())
+  {
+    return true;
+  }
+  else if (lhs.ptr() == rhs.ptr())
+  {
+    return lhs.env() < rhs.env();
+  }
+  else
+  {
+    return false;
+  }
 }
 
 /// @brief   Export the textual representation of an SDD to a stream.
@@ -552,7 +563,9 @@ struct hash<sdd::SDD<C>>
   operator()(const sdd::SDD<C>& x)
   const noexcept
   {
-    return sdd::util::hash(x.ptr());
+    std::size_t seed = sdd::util::hash(x.ptr());
+    sdd::util::hash_combine(seed, x.env());
+    return seed;
   }
 };
 

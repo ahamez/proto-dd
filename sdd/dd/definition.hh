@@ -2,6 +2,7 @@
 #define _SDD_DD_DEFINITION_HH_
 
 #include <cassert>
+#include <tuple>
 
 #include "sdd/internal_manager_fwd.hh"
 #include "sdd/dd/alpha.hh"
@@ -91,6 +92,9 @@ public:
   /// @brief The type of a set of values.
   using values_type = typename C::Values;
 
+  /// @brief Convenient type to store both proto environment and the real SDD.
+  using tuple_type = std::tuple<proto_env_type, ptr_type>;
+
 private:
 
   /// @brief The environment to reconstruct the corresponding flat SDD.
@@ -127,8 +131,11 @@ public:
   /// O(1).
   SDD(variable_type var, values_type&& val, const SDD& succ)
     : env_(dd::empty_proto_env<C>())
-    , ptr_(create_node(var, std::move(val), succ))
-  {}
+//    , ptr_(create_node(var, std::move(val), succ))
+    , ptr_(zero_ptr())
+  {
+    std::tie(env_, ptr_) = create_node(var, std::move(val), succ);
+  }
 
   /// @internal
   /// @brief Construct a flat SDD.
@@ -139,8 +146,11 @@ public:
   /// O(1).
   SDD(variable_type var, const values_type& val, const SDD& succ)
     : env_(dd::empty_proto_env<C>())
-    , ptr_(create_node(var, val, succ))
-  {}
+//    , ptr_(create_node(var, val, succ))
+    , ptr_(zero_ptr())
+  {
+    std::tie(env_, ptr_) = create_node(var, val, succ);
+  }
 
 //  /// @internal
 //  /// @brief Construct a hierarchical SDD.
@@ -169,12 +179,14 @@ public:
       // We can safely pass the order_identifier as a user one because only hierarchical levels
       // can be artificial.
       assert(not o.identifier().artificial());
-      ptr_ = create_node(o.variable(), init(o.identifier().user()), SDD(o.next(), init));
+//      ptr_ = create_node(o.variable(), init(o.identifier().user()), SDD(o.next(), init));
+      std::tie(env_, ptr_)
+        = create_node(o.variable(), init(o.identifier().user()), SDD(o.next(), init));
     }
     else // hierarchical
     {
 //      ptr_ = create_node(o.variable(), SDD(o.nested(), init), SDD(o.next(), init));
-      assert(false);
+      assert(false && "Hierarchy in order.");
     }
   }
 
@@ -197,7 +209,7 @@ public:
   empty()
   const noexcept
   {
-    return ptr_ == zero_ptr();
+    return ptr_ == zero_ptr(); // and env() == dd::empty_proto_env<C>() ???
   }
 
   /// @brief Swap two SDD.
@@ -207,8 +219,8 @@ public:
   swap(SDD& lhs, SDD& rhs)
   noexcept
   {
-    using std::swap;
-    swap(lhs.ptr_, rhs.ptr_);
+    std::swap(lhs.env_, rhs.env_);
+    std::swap(lhs.ptr_, rhs.ptr_);
   }
 
 //  /// @internal
@@ -234,11 +246,14 @@ public:
   /// constructs a flat SDD.
   ///
   /// O(n) where n is the number of arcs in the builder.
-  template <typename Valuation>
-  SDD(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
+//  template <typename Valuation>
+//  SDD(const variable_type& var, dd::alpha_builder<C, Valuation>&& builder)
+  SDD(variable_type var, dd::alpha_builder<C, values_type>&& builder)
     : env_(dd::empty_proto_env<C>())
-    , ptr_(create_node(var, std::move(builder)))
-  {}
+    , ptr_(zero_ptr())
+  {
+    std::tie(env_, ptr_) = create_node(var, std::move(builder));
+  }
 
   /// @internal
   /// @brief Get the content of the SDD (an mem::variant).
@@ -321,6 +336,7 @@ public:
     return dd::count_combinations(*this);
   }
 
+  /// @internal
   proto_view<C>
   view()
   const
@@ -334,20 +350,24 @@ private:
   /// @brief Helper function to create a node, flat or hierarchical, with only one arc.
   ///
   /// O(1).
-  template <typename Valuation>
+//  template <typename Valuation>
   static
-  ptr_type
-  create_node(variable_type var, Valuation&& val, const SDD& succ)
+//  ptr_type
+//  create_node(variable_type var, Valuation&& val, const SDD& succ)
+  tuple_type
+  create_node(variable_type var, values_type&& val, const SDD& succ)
   {
     if (succ.empty() or values::empty_values(val))
     {
-      return zero_ptr();
+//      return zero_ptr();
+      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
     }
     else
     {
-      dd::alpha_builder<C, Valuation> builder;
+      dd::alpha_builder<C, values_type> builder;
       builder.add(std::move(val), succ);
-      return ptr_type(unify_node(var, std::move(builder)));
+//      return ptr_type(unify_node(var, std::move(builder)));
+      return unify_proto(std::move(builder));
     }
   }
 
@@ -355,20 +375,23 @@ private:
   /// @brief Helper function to create a node, flat or hierarchical, with only one arc.
   ///
   /// O(1).
-  template <typename Valuation>
+//  template <typename Valuation>
   static
-  ptr_type
-  create_node(variable_type var, const Valuation& val, const SDD& succ)
+//  ptr_type
+//  create_node(variable_type var, const Valuation& val, const SDD& succ)
+  tuple_type
+  create_node(variable_type var, const values_type& val, const SDD& succ)
   {
     if (succ.empty() or values::empty_values(val))
     {
-      return zero_ptr();
+      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
     }
     else
     {
-      dd::alpha_builder<C, Valuation> builder;
+      dd::alpha_builder<C, values_type> builder;
       builder.add(val, succ);
-      return ptr_type(unify_node(var, std::move(builder)));
+//      return ptr_type(unify_node(var, std::move(builder)));
+      return unify_proto(std::move(builder));
     }
   }
 
@@ -376,19 +399,35 @@ private:
   /// @brief Helper function to create a node, flat or hierarchical, from an alpha.
   ///
   /// O(n) where n is the number of arcs in the builder.
-  template <typename Valuation>
+//  template <typename Valuation>
   static
-  ptr_type
-  create_node(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
+//  ptr_type
+//  create_node(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
+  tuple_type
+  create_node(variable_type var, dd::alpha_builder<C, values_type>&& builder)
   {
     if (builder.empty())
     {
-      return zero_ptr();
+      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
     }
     else
     {
-      return ptr_type(unify_node(var, std::move(builder)));
+//      return ptr_type(unify_node(var, std::move(builder)));
+      return unify_proto(std::move(builder));
     }
+  }
+
+  /// @internal
+  static
+  tuple_type
+  unify_proto(dd::alpha_builder<C, values_type>&& builder)
+  {
+    auto& ut = global<C>().sdd_unique_table;
+    char* addr = ut.allocate(builder.size_to_allocate());
+    unique_type* u =
+    //      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
+      new (addr) unique_type(mem::construct<proto_node<C>>(), typename proto_node<C>::arcs_type());
+    return std::make_tuple(dd::empty_proto_env<C>(), ptr_type(ut(u)));
   }
 
 //  /// @internal

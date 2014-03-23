@@ -37,6 +37,8 @@ using flat_node = proto_view<C>;
 //template <typename C>
 //using hierarchical_node = node<C, SDD<C>>;
 
+template <typename C> SDD<C> one() noexcept;
+
 /*------------------------------------------------------------------------------------------------*/
 
 /// @brief Hierarchical Set Decision Diagram.
@@ -418,57 +420,91 @@ private:
   }
 
   /// @internal
+  /// @brief Get the proto environment from an alpha_builder arc.
+  static
+  const dd::proto_env<C>&
+  get_env(const std::pair<SDD<C>, values_type>& p)
+  noexcept
+  {
+    return p.first.env();
+  }
+
+
+  /// @internal
   static
   tuple_type
   unify_proto(dd::alpha_builder<C, values_type>&& builder)
   {
+    using value_stack_type = typename dd::proto_env<C>::value_stack_type;
+    using successor_stack_type = typename dd::proto_env<C>::successor_stack_type;
+    using value_type = typename C::Values::value_type;
+
+    // Compute the new level (level 0 is above |1|).
+    const auto new_level = builder.begin()->first == one<C>()
+                         ? 0
+                         : get_env(*builder.begin()).level() + 1;
+
+    // The resulting canonized arcs.
+    typename proto_node<C>::arcs_type arcs;
+    arcs.reserve(builder.size());
+
+    // A temporary holder of values.
+    std::vector<value_type> values_buffer;
+    values_buffer.reserve(builder.size() * 4);
+
+    // Successors' value stacks
+    std::vector<std::reference_wrapper<const typename proto_arc<C>::value_stack_type>> succ_stacks;
+    succ_stacks.reserve(builder.size());
+
+    // Copy all values in a more convenient to use vector.
+    // Also, get a reference to successors' stacks.
+    for (const auto& sdd_values : builder)
+    {
+      std::copy( sdd_values.second.cbegin(), sdd_values.second.cend()
+               , std::back_inserter(values_buffer));
+
+      succ_stacks.push_back(sdd_values.first.env().value_stack());
+    }
+
+    // Find the common value of all values on all arcs of the current alpha builder.
+    const auto k = C::common(values_buffer.cbegin(), values_buffer.cend());
+
+    // Shift all values of the current alpha builder.
+    for (const auto& sdd_values : builder)
+    {
+      values_type values;
+      for (const auto& v : sdd_values.second)
+      {
+        values.insert(C::shift(v, k));
+      }
+      // Construct arc of the proto_dd.
+      arcs.emplace_back( std::move(values)
+                       , sdd_values.first.env().value_stack()
+                       , sdd_values.first.env().successor_stack());
+    }
+
+    // Get the value stack to put in environment.
+    value_stack_type new_value_stack;// = dd::common(succ_stacks, C::common<???>);
+    new_value_stack = push(new_value_stack, k);
+
+    successor_stack_type new_successor_stack;
+
+    // Create value stacks of each arc.
+    for (auto& proto_arc : arcs)
+    {
+      proto_arc.values.shift(new_value_stack, C::shift);
+      // TODO  => root env successor stack
+    }
+
+    // Finally, we can create and unify the proto_dd.
     auto& ut = global<C>().sdd_unique_table;
     char* addr = ut.allocate(builder.size_to_allocate());
     unique_type* u =
-    //      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
-      new (addr) unique_type(mem::construct<proto_node<C>>(), typename proto_node<C>::arcs_type());
-    return std::make_tuple(dd::empty_proto_env<C>(), ptr_type(ut(u)));
-  }
-
-//  /// @internal
-//  /// @brief Helper function to unify a node, hierarchical, from an alpha.
-//  ///
-//  /// O(n) where n is the number of arcs in the builder.
-//  static
-//  unique_type&
-//  unify_node(variable_type var, dd::alpha_builder<C, SDD>&& builder)
-//  {
-//    // Will be erased by the unicity table, either it's an already existing node or a deletion
-//    // is requested by ptr.
-//    // Note that the alpha function is allocated right behind the node, thus extra care must be
-//    // taken. This is also why we use Boost.Intrusive in order to be able to manage memory
-//    // exactly the way we want.
-//    auto& ut = global<C>().sdd_unique_table;
-//    char* addr = ut.allocate(builder.size_to_allocate());
-//    unique_type* u =
-//      new (addr) unique_type(mem::construct<node<C, SDD>>(), var, builder);
-//    return ut(u);
-//  }
-
-  /// @internal
-  /// @brief Helper function to unify a node, flat, from an alpha.
-  ///
-  /// O(n) where n is the number of arcs in the builder.
-  static
-  unique_type&
-  unify_node(variable_type var, dd::alpha_builder<C, values_type>&& builder)
-  {
-    // Will be erased by the unicity table, either it's an already existing node or a deletion
-    // is requested by ptr.
-    // Note that the alpha function is allocated right behind the node, thus extra care must be
-    // taken. This is also why we use Boost.Intrusive in order to be able to manage memory
-    // exactly the way we want.
-    auto& ut = global<C>().sdd_unique_table;
-    char* addr = ut.allocate(builder.size_to_allocate());
-    unique_type* u =
-//      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
-      new (addr) unique_type(mem::construct<proto_node<C>>(), typename proto_node<C>::arcs_type());
-    return ut(u);
+      new (addr) unique_type(mem::construct<proto_node<C>>(), std::move(arcs));
+    return std::make_tuple( dd::proto_env<C>( new_level
+                                            , std::move(new_value_stack)
+                                            , std::move(new_successor_stack))
+                          , ptr_type(ut(u)));
   }
 };
 

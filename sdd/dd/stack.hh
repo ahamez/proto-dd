@@ -124,9 +124,9 @@ canonize (stack<T>& s)
   return s;
 }
 
-template <typename T>
+template <typename T, typename Common>
 stack<T>
-common (const std::vector<stack<T>>& ss)
+common (const std::vector<const std::reference_wrapper<stack<T>>>& ss, Common&& cm)
 {
   std::size_t max_size = 0;
   for (const auto& s : ss)
@@ -138,7 +138,7 @@ common (const std::vector<stack<T>>& ss)
     std::vector<T> values;
     for (const auto& s : ss)
       values.push_back(s[i]);
-    result.elements.push_back(*std::min_element(values.begin(), values.end()));
+    result.elements.push_back(cm(values.begin(), values.end()));
   }
   return canonize(result);
 }

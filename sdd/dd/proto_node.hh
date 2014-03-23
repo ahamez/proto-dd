@@ -20,12 +20,16 @@ struct proto_arc
   using values_type = typename C::Values;
   using value_type = typename values_type::value_type;
 
-  values_type current_values;
-  dd::stack<value_type> values;
-  dd::stack<SDD<C>> successors;
+  using value_stack_type     = dd::stack<value_type>;
+  using successor_stack_type = dd::stack<SDD<C>>;
 
-  proto_arc(values_type&& values)
-    : current_values(std::move(values)), values(), successors()
+  values_type current_values;
+  value_stack_type values;
+  successor_stack_type successors;
+
+  proto_arc( values_type&& values, const value_stack_type& value_stack
+           , const successor_stack_type& successors_stack)
+    : current_values(std::move(values)), values(value_stack), successors(successors_stack)
   {}
 };
 

@@ -159,6 +159,21 @@ public:
       new (base + i++) arc<C, Valuation>(std::move(a.second), std::move(a.first));
     }
   }
+
+  typename boost::container::flat_map<SDD<C>, Valuation>::const_iterator
+  begin()
+  const noexcept
+  {
+    return map_.begin();
+  }
+
+  typename boost::container::flat_map<SDD<C>, Valuation>::const_iterator
+  end()
+  const noexcept
+  {
+    return map_.end();
+  }
+
 };
 
 /*------------------------------------------------------------------------------------------------*/

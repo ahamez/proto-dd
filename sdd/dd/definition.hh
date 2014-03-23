@@ -11,7 +11,7 @@
 #include "sdd/dd/path_generator_fwd.hh"
 #include "sdd/dd/proto_env.hh"
 #include "sdd/dd/proto_node.hh"
-#include "sdd/dd/proto_view.hh"
+#include "sdd/dd/proto_view_fwd.hh"
 #include "sdd/dd/terminal.hh"
 #include "sdd/dd/top.hh"
 #include "sdd/mem/ptr.hh"
@@ -27,8 +27,10 @@ namespace sdd {
 /*------------------------------------------------------------------------------------------------*/
 
 /// @brief SDD at the deepest level.
+//template <typename C>
+//using flat_node = node<C, typename C::Values>;
 template <typename C>
-using flat_node = node<C, typename C::Values>;
+using flat_node = proto_view<C>;
 
 ///// @brief All but SDD at the deepest level.
 //template <typename C>
@@ -209,19 +211,26 @@ public:
     swap(lhs.ptr_, rhs.ptr_);
   }
 
+//  /// @internal
+//  /// @brief Construct an SDD from a ptr.
+//  ///
+//  /// O(1).
+//  SDD(const ptr_type& ptr)
+//  noexcept
+//    : env_(dd::empty_proto_env<C>())
+//    , ptr_(ptr)
+//  {}
+
   /// @internal
-  /// @brief Construct an SDD from a ptr.
-  ///
-  /// O(1).
-  SDD(const ptr_type& ptr)
+  SDD(const ptr_type& ptr, const dd::proto_env<C>& env)
   noexcept
-    : env_(dd::empty_proto_env<C>())
+    : env_(env)
     , ptr_(ptr)
   {}
 
   /// @internal
   /// @brief  Construct an SDD, flat or hierarchical, with an alpha.
-  /// \tparam Valuation If an SDD, constructs a hierarchical SDD; if a set of values,
+  /// @tparam Valuation If an SDD, constructs a hierarchical SDD; if a set of values,
   /// constructs a flat SDD.
   ///
   /// O(n) where n is the number of arcs in the builder.
@@ -310,6 +319,13 @@ public:
   const
   {
     return dd::count_combinations(*this);
+  }
+
+  proto_view<C>
+  view()
+  const
+  {
+    return proto_view<C>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
   }
 
 private:
@@ -411,7 +427,8 @@ private:
     auto& ut = global<C>().sdd_unique_table;
     char* addr = ut.allocate(builder.size_to_allocate());
     unique_type* u =
-      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
+//      new (addr) unique_type(mem::construct<proto_node<C>>(), var, builder);
+      new (addr) unique_type(mem::construct<proto_node<C>>(), typename proto_node<C>::arcs_type());
     return ut(u);
   }
 };
@@ -491,7 +508,7 @@ SDD<C>
 zero()
 noexcept
 {
-  return {SDD<C>::zero_ptr()};
+  return {SDD<C>::zero_ptr(), dd::empty_proto_env<C>()};
 }
 
 /// @brief Return the |1| terminal.
@@ -504,7 +521,7 @@ SDD<C>
 one()
 noexcept
 {
-  return {SDD<C>::one_ptr()};
+  return {SDD<C>::one_ptr(), dd::empty_proto_env<C>()};
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -524,14 +541,14 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
     throw top<C>(lhs, rhs);
   }
 
-  typename SDD<C>::variable_type lhs_variable;
-  typename SDD<C>::variable_type rhs_variable;
+//  typename SDD<C>::variable_type lhs_variable;
+//  typename SDD<C>::variable_type rhs_variable;
 
 //  // we must convert to the right type before comparing variables
 //  if (lhs_index == SDD<C>::proto_node_index)
 //  {
-  lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
-  rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
+//    lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
+//    rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
 //  }
 //  else
 //  {
@@ -539,9 +556,22 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
 //    rhs_variable = mem::variant_cast<hierarchical_node<C>>(*rhs).variable();
 //  }
 
-  if (lhs_variable != rhs_variable)
+//  if (lhs_variable != rhs_variable)
+//  {
+//    throw top<C>(lhs, rhs);
+//  }
+
+
+  if (lhs_index == SDD<C>::proto_node_index)
   {
-    throw top<C>(lhs, rhs);
+    if (lhs.env().level() != rhs.env().level())
+    {
+      throw top<C>(lhs, rhs);
+    }
+  }
+  else
+  {
+    assert(false);
   }
 
   return lhs_index;
@@ -575,5 +605,6 @@ struct hash<sdd::SDD<C>>
 
 #include "sdd/dd/count_combinations.hh"
 #include "sdd/dd/path_generator.hh"
+#include "sdd/dd/proto_view.hh"
 
 #endif // _SDD_DD_DEFINITION_HH_

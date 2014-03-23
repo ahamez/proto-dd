@@ -1,7 +1,7 @@
 #ifndef _SDD_DD_STACK_HH_
 #define _SDD_DD_STACK_HH_
 
-#include <algorithm> // copy
+#include <algorithm>
 #include <vector>
 
 #include "sdd/dd/default_value.hh"
@@ -25,23 +25,25 @@ struct stack
       return default_value<T>::value();
   }
 
+  template <typename Shift>
   stack<T>&
-  operator -= (const stack<T>& rhs)
+  shift(const stack<T>& rhs, Shift&& sh)
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());
     for (int i = 0; i != max_size; ++i)
-      this->elements[i] -= rhs[i];
+      this->elements[i] = sh(this->elements[i], rhs[i]);
     return canonize(*this);
   }
 
+  template <typename Rebuild>
   stack<T>&
-  operator += (const stack<T>& rhs)
+  rebuild(const stack<T>& rhs, Rebuild&& rb)
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());
     for (int i = 0; i != max_size; ++i)
-      this->elements[i] += rhs[i];
+      this->elements[i] = rb(this->elements[i], rhs[i]);
     return canonize(*this);
   }
 
@@ -111,7 +113,7 @@ template <typename T>
 stack<T>&
 canonize (stack<T>& s)
 {
-  for (int i = s.elements.size() ; i > 0; --i)
+  for (std::size_t i = s.elements.size() ; i > 0; --i)
   {
     if (s[i-1] == default_value<T>::value())
       s.elements.pop_back();

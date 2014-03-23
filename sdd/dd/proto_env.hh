@@ -1,8 +1,6 @@
 #ifndef _SDD_DD_PROTO_ENV_HH_
 #define _SDD_DD_PROTO_ENV_HH_
 
-//#include <vector>
-
 #include "sdd/dd/definition_fwd.hh"
 #include "sdd/dd/stack.hh"
 #include "sdd/mem/ptr.hh"
@@ -158,7 +156,7 @@ private:
   mk_ptr(unsigned level, value_stack_type&& v, successor_stack_type&& s)
 //  mk_ptr()
   {
-    auto& ut = global<C>().proto_unique_table;
+    auto& ut = global<C>().proto_env_unique_table;
     char* addr = ut.allocate(0);
     unique_type* u =
       new (addr) unique_type(level, std::move(v), std::move(s));

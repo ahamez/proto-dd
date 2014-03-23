@@ -30,188 +30,190 @@ struct LIBSDD_ATTRIBUTE_PACKED sum_op_impl
   /// @brief The textual representation of the union operator.
   static constexpr char symbol = '+';
 
-  /// @brief Perform the SDD union algorithm.
-  ///
-  /// It's a so-called 'n-ary' union in the sense that we don't create intermediary SDD.
-  /// Also, a lot of tests permit to break loops as soon as possible.
-  template <typename InputIterator, typename NodeType>
-  static
-//  typename std::enable_if< std::is_same<NodeType, hierarchical_node<C>>::value
-//                         or not values::values_traits<typename C::Values>::fast_iterable
+//  /// @brief Perform the SDD union algorithm.
+//  ///
+//  /// It's a so-called 'n-ary' union in the sense that we don't create intermediary SDD.
+//  /// Also, a lot of tests permit to break loops as soon as possible.
+//  template <typename InputIterator, typename NodeType>
+//  static
+////  typename std::enable_if< std::is_same<NodeType, hierarchical_node<C>>::value
+////                         or not values::values_traits<typename C::Values>::fast_iterable
+////                         , SDD<C>>::type
+//  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
+//                         and not values::values_traits<typename C::Values>::fast_iterable
 //                         , SDD<C>>::type
-  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
-                         and not values::values_traits<typename C::Values>::fast_iterable
-                         , SDD<C>>::type
-  work(InputIterator begin, InputIterator end, context<C>& cxt)
-  {
-    using node_type = NodeType;
-    using valuation_type = typename node_type::valuation_type;
-
-    auto operands_cit = begin;
-    const auto operands_end = end;
-
-    // Get the first operand as a node, we need it to initialize the algorithm.
-    const node_type& head = mem::variant_cast<node_type>(**operands_cit);
-
-    // Type of the list of successors for a valuation, to be merged with the union operation
-    // right before calling the square union.
-    using sum_builder_type = sum_builder<C, SDD<C>>;
-
-    /// @todo Use Boost.Intrusive to save on memory allocations?
-    // List all the successors for each valuation in the final alpha.
-    std::unordered_map<valuation_type, sum_builder_type> res(head.size());
-
-    // Needed to temporarily store arcs erased from res and arcs from the alpha visited in
-    // the loop (B).
-    std::vector<std::pair<valuation_type, sum_builder_type>> save;
-    save.reserve(head.size());
-
-    // Used in test (F).
-    std::vector<std::pair<valuation_type, sum_builder_type>> remainder;
-    remainder.reserve(head.size());
-
-    // Initialize res with the alpha of the first operand.
-    for (auto& arc : head)
-    {
-      sum_builder_type succs;
-      succs.add(arc.successor());
-      res.emplace(arc.valuation(), std::move(succs));
-    }
-
-    // (A).
-    for (++operands_cit; operands_cit != operands_end; ++operands_cit)
-    {
-      // Throw a Top if operands are incompatible (different types or different variables).
-      check_compatibility(*begin, *operands_cit);
-
-      const auto res_end = res.end();
-
-      const node_type& node = mem::variant_cast<node_type>(**operands_cit);
-      const auto alpha_end = node.end();
-
-      // (B). For each arc of the current operand.
-      for (auto alpha_cit = node.begin(); alpha_cit != alpha_end; ++alpha_cit)
-      {
-        // The current valuation may be modified, we need a copy.
-        valuation_type current_val = alpha_cit->valuation();
-        const SDD<C> current_succ = alpha_cit->successor();
-
-        // Initialize the start of the next search.
-        auto res_cit = res.begin();
-
-        // (C). While the current valuation is not empty, test it against arcs in res.
-        while (not values::empty_values(current_val) and res_cit != res_end)
-        {
-          const valuation_type& res_val = res_cit->first;
-          sum_builder_type& res_succs = res_cit->second;
-
-          // (D).
-          if (current_val == res_val) // Same valuations.
-          {
-            save.emplace_back(res_val, std::move(res_succs));
-            save.back().second.add(current_succ);
-            const auto to_erase = res_cit;
-            ++res_cit;
-            res.erase(to_erase);
-            // Avoid useless insertion or temporary variables.
-            goto equality;
-          }
-
-          intersection_builder<C, valuation_type> inter_builder;
-          inter_builder.add(current_val);
-          inter_builder.add(res_val);
-          const valuation_type inter = intersection(cxt, std::move(inter_builder));
-
-          // (E). The current valuation and the current arc from res have a common part.
-          if (not values::empty_values(inter))
-          {
-            save.emplace_back(inter, res_succs);
-            save.back().second.add(current_succ);
-
-            // (F).
-            valuation_type diff = difference(cxt, res_val, inter);
-            if (not values::empty_values(diff))
-            {
-              // (res_val - inter) can't be in intersection, but we need to keep it
-              // for the next arcs of the current alpha. So we put it in a temporary storage.
-              // It will be added back in res when we have finished with the current valuation.
-              remainder.emplace_back(std::move(diff), std::move(res_succs));
-            }
-
-            // We won't need the current arc of res for the current val, we already have the
-            // common part. Now, the current valuation has to be tested against the next arcs
-            // of res.
-            const auto to_erase = res_cit;
-            ++res_cit;
-            res.erase(to_erase);
-
-            // (G). The current valuation is completely included in the current arc of res.
-            if (current_val == inter)
-            {
-              // We can move to the next arc of the current operand.
-              break;
-            }
-
-            // Continue with what remains of val. If val is empty, the loop will stop at the
-            // next iteration.
-            current_val = difference(cxt, current_val, inter);
-          }
-          else // (H). Empty intersection, lookup for next possible common parts.
-          {
-            ++res_cit;
-          }
-        } // While we're not at the end of res and val is not empty.
-
-        // (I). For val or a part of val (it could have been modified during the previous
-        // loop), we didn't find an intersection with any arc of res.
-        if (not values::empty_values(current_val))
-        {
-          sum_builder_type succs;
-          succs.add(current_succ);
-          save.emplace_back(std::move(current_val), std::move(succs));
-        }
-
-        // Both arcs had the same valuation.
-        equality:;
-
-        // Reinject all parts that were removed in (F).
-        for (auto& rem : remainder)
-        {
-          res.emplace(std::move(rem.first), std::move(rem.second));
-        }
-        remainder.clear();
-
-      } // For each arc of the current operand.
-
-      // Reinject all parts that were removed from res (all parts that have a non-empty
-      // intersection with the current alpha) and all parts of the current alpha that have an
-      // empty intersection with all the parts of res.
-      res.insert(save.begin(), save.end());
-
-      // We still need save.
-      save.clear();
-    } // End of iteration on operands.
-
-    square_union<C, valuation_type> su;
-    su.reserve(res.size());
-    for (auto& arc : res)
-    {
-      // construct an operand for the square union: (successors union) --> valuation
-      su.add(sum(cxt, std::move(arc.second)), arc.first);
-    }
-
-    return SDD<C>(head.variable(), su(cxt));
-  }
+//  work(InputIterator begin, InputIterator end, context<C>& cxt)
+//  {
+//    using node_type = NodeType;
+//    using valuation_type = typename node_type::valuation_type;
+//
+//    auto operands_cit = begin;
+//    const auto operands_end = end;
+//
+//    // Get the first operand as a node, we need it to initialize the algorithm.
+//    const node_type& head = mem::variant_cast<node_type>(**operands_cit);
+//
+//    // Type of the list of successors for a valuation, to be merged with the union operation
+//    // right before calling the square union.
+//    using sum_builder_type = sum_builder<C, SDD<C>>;
+//
+//    /// @todo Use Boost.Intrusive to save on memory allocations?
+//    // List all the successors for each valuation in the final alpha.
+//    std::unordered_map<valuation_type, sum_builder_type> res(head.size());
+//
+//    // Needed to temporarily store arcs erased from res and arcs from the alpha visited in
+//    // the loop (B).
+//    std::vector<std::pair<valuation_type, sum_builder_type>> save;
+//    save.reserve(head.size());
+//
+//    // Used in test (F).
+//    std::vector<std::pair<valuation_type, sum_builder_type>> remainder;
+//    remainder.reserve(head.size());
+//
+//    // Initialize res with the alpha of the first operand.
+//    for (auto& arc : head)
+//    {
+//      sum_builder_type succs;
+//      succs.add(arc.successor());
+//      res.emplace(arc.valuation(), std::move(succs));
+//    }
+//
+//    // (A).
+//    for (++operands_cit; operands_cit != operands_end; ++operands_cit)
+//    {
+//      // Throw a Top if operands are incompatible (different types or different variables).
+//      check_compatibility(*begin, *operands_cit);
+//
+//      const auto res_end = res.end();
+//
+//      const node_type& node = mem::variant_cast<node_type>(**operands_cit);
+//      const auto alpha_end = node.end();
+//
+//      // (B). For each arc of the current operand.
+//      for (auto alpha_cit = node.begin(); alpha_cit != alpha_end; ++alpha_cit)
+//      {
+//        // The current valuation may be modified, we need a copy.
+//        valuation_type current_val = alpha_cit->valuation();
+//        const SDD<C> current_succ = alpha_cit->successor();
+//
+//        // Initialize the start of the next search.
+//        auto res_cit = res.begin();
+//
+//        // (C). While the current valuation is not empty, test it against arcs in res.
+//        while (not values::empty_values(current_val) and res_cit != res_end)
+//        {
+//          const valuation_type& res_val = res_cit->first;
+//          sum_builder_type& res_succs = res_cit->second;
+//
+//          // (D).
+//          if (current_val == res_val) // Same valuations.
+//          {
+//            save.emplace_back(res_val, std::move(res_succs));
+//            save.back().second.add(current_succ);
+//            const auto to_erase = res_cit;
+//            ++res_cit;
+//            res.erase(to_erase);
+//            // Avoid useless insertion or temporary variables.
+//            goto equality;
+//          }
+//
+//          intersection_builder<C, valuation_type> inter_builder;
+//          inter_builder.add(current_val);
+//          inter_builder.add(res_val);
+//          const valuation_type inter = intersection(cxt, std::move(inter_builder));
+//
+//          // (E). The current valuation and the current arc from res have a common part.
+//          if (not values::empty_values(inter))
+//          {
+//            save.emplace_back(inter, res_succs);
+//            save.back().second.add(current_succ);
+//
+//            // (F).
+//            valuation_type diff = difference(cxt, res_val, inter);
+//            if (not values::empty_values(diff))
+//            {
+//              // (res_val - inter) can't be in intersection, but we need to keep it
+//              // for the next arcs of the current alpha. So we put it in a temporary storage.
+//              // It will be added back in res when we have finished with the current valuation.
+//              remainder.emplace_back(std::move(diff), std::move(res_succs));
+//            }
+//
+//            // We won't need the current arc of res for the current val, we already have the
+//            // common part. Now, the current valuation has to be tested against the next arcs
+//            // of res.
+//            const auto to_erase = res_cit;
+//            ++res_cit;
+//            res.erase(to_erase);
+//
+//            // (G). The current valuation is completely included in the current arc of res.
+//            if (current_val == inter)
+//            {
+//              // We can move to the next arc of the current operand.
+//              break;
+//            }
+//
+//            // Continue with what remains of val. If val is empty, the loop will stop at the
+//            // next iteration.
+//            current_val = difference(cxt, current_val, inter);
+//          }
+//          else // (H). Empty intersection, lookup for next possible common parts.
+//          {
+//            ++res_cit;
+//          }
+//        } // While we're not at the end of res and val is not empty.
+//
+//        // (I). For val or a part of val (it could have been modified during the previous
+//        // loop), we didn't find an intersection with any arc of res.
+//        if (not values::empty_values(current_val))
+//        {
+//          sum_builder_type succs;
+//          succs.add(current_succ);
+//          save.emplace_back(std::move(current_val), std::move(succs));
+//        }
+//
+//        // Both arcs had the same valuation.
+//        equality:;
+//
+//        // Reinject all parts that were removed in (F).
+//        for (auto& rem : remainder)
+//        {
+//          res.emplace(std::move(rem.first), std::move(rem.second));
+//        }
+//        remainder.clear();
+//
+//      } // For each arc of the current operand.
+//
+//      // Reinject all parts that were removed from res (all parts that have a non-empty
+//      // intersection with the current alpha) and all parts of the current alpha that have an
+//      // empty intersection with all the parts of res.
+//      res.insert(save.begin(), save.end());
+//
+//      // We still need save.
+//      save.clear();
+//    } // End of iteration on operands.
+//
+//    square_union<C, valuation_type> su;
+//    su.reserve(res.size());
+//    for (auto& arc : res)
+//    {
+//      // construct an operand for the square union: (successors union) --> valuation
+//      su.add(sum(cxt, std::move(arc.second)), arc.first);
+//    }
+//
+//    return SDD<C>(head.variable(), su(cxt));
+//  }
 
   /// @brief Linear union of flat SDDs whose valuation are "fast iterable".
   template <typename InputIterator, typename NodeType>
   static
-  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
-                         and values::values_traits<typename C::Values>::fast_iterable
-                         , SDD<C>>::type
+//  typename std::enable_if< std::is_same<NodeType, proto_node<C>>::value
+//                         and values::values_traits<typename C::Values>::fast_iterable
+//                         , SDD<C>>::type
+  SDD<C>
   work(InputIterator begin, InputIterator end, context<C>& cxt)
   {
-    const auto& variable = mem::variant_cast<flat_node<C>>(**begin).variable();
+//    const auto& variable = mem::variant_cast<flat_node<C>>(**begin).variable();
+    const auto variable = begin->env().level();
 
     using values_type      = typename C::Values;
     using values_builder   = typename values::values_traits<values_type>::builder;
@@ -225,7 +227,8 @@ struct LIBSDD_ATTRIBUTE_PACKED sum_op_impl
     {
       check_compatibility(*begin, *cit);
 
-      const auto& node = mem::variant_cast<flat_node<C>>(**cit);
+//      const auto& node = mem::variant_cast<flat_node<C>>(**cit);
+      const auto node = cit->view();
       for (const auto& arc : node)
       {
         const SDD<C> succ = arc.successor();

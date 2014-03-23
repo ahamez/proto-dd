@@ -19,7 +19,7 @@ noexcept(noexcept(x.empty()))
 template <typename T>
 auto
 empty_values_impl(const T& x, long)
-noexcept(noexcept(size(x)))
+noexcept(noexcept(empty(x)))
 -> decltype(bool())
 {
   return empty(x);

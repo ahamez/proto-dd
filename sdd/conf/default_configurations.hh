@@ -131,6 +131,31 @@ struct conf2
 {
   using Identifier = unsigned int;
   using Values     = values::flat_set<unsigned int>;
+
+  template <typename InputIterator>
+  static
+  unsigned int
+  common(InputIterator it, InputIterator end)
+  noexcept
+  {
+    return *std::min_element(it, end);
+  }
+
+  static
+  unsigned int
+  shift(unsigned int v, unsigned int k)
+  noexcept
+  {
+    return v - k;
+  }
+
+  static
+  unsigned int
+  rebuild(unsigned int v, unsigned int k)
+  noexcept
+  {
+    return v + k;
+  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

@@ -4,25 +4,50 @@
 #include <algorithm>  // equal, for_each
 #include <functional> // hash
 #include <iosfwd>
+#include <vector>
 
-#include "sdd/dd/alpha.hh"
 #include "sdd/dd/definition.hh"
+#include "sdd/dd/stack.hh"
 #include "sdd/util/hash.hh"
-#include "sdd/util/packed.hh"
 
 namespace sdd {
 
 /*------------------------------------------------------------------------------------------------*/
 
+template <typename C>
+struct proto_arc
+{
+  using values_type = typename C::Values;
+  using value_type = typename values_type::value_type;
+
+  values_type current_values;
+  dd::stack<value_type> values;
+  dd::stack<SDD<C>> successors;
+
+  proto_arc(values_type&& values)
+    : current_values(std::move(values)), values(), successors()
+  {}
+};
+
+template <typename C>
+inline
+bool
+operator==(const proto_arc<C>& lhs, const proto_arc<C>& rhs)
+noexcept
+{
+  return lhs.current_values == rhs.current_values and lhs.values == rhs.values
+     and lhs.successors == rhs.successors;
+}
+
+/*------------------------------------------------------------------------------------------------*/
+
 /// @brief  A non-terminal node in an SDD.
-/// \tparam Valuation If a set of values, define a flat node; if an SDD, define a hierarchical
-/// node.
 ///
 /// For the sake of canonicity, a node shall not exist in several locations, thus we prevent
 /// its copy. Also, to enforce this canonicity, we need that nodes have always the same
 /// address, thus they can't be moved to an other memory location once created.
 template <typename C>
-class LIBSDD_ATTRIBUTE_PACKED proto_node final
+class proto_node final
 {
   // Can't copy a proto_node.
   proto_node& operator=(const proto_node&) = delete;
@@ -34,68 +59,24 @@ class LIBSDD_ATTRIBUTE_PACKED proto_node final
 
 public:
 
-  /// @brief The type of the variable of this node.
-  using variable_type = typename C::variable_type;
-
-  /// @brief The type of the valuation of this node.
-  using valuation_type = typename C::Values;
-
   /// @brief The type of the valuation of this node.
   using values_type = typename C::Values;
 
-  /// @brief The type used to store the number of arcs of this node.
-  using alpha_size_type = typename C::alpha_size_type;
+  using value_type = typename values_type::value_type;
 
-  /// @brief A (const) iterator on the arcs of this node.
-  using const_iterator = const arc<C, values_type>*;
+  using arcs_type = std::vector<proto_arc<C>>;
 
-  /// @brief The arc type.
-  using arc_type = arc<C, values_type>;
+  using const_iterator = typename arcs_type::const_iterator;
 
 private:
 
-  /// @brief The variable of this node.
-  const variable_type variable_;
-
-  /// @brief The number of arcs of this node.
-  const alpha_size_type size_;
+  const arcs_type arcs_;
 
 public:
 
-  /// @internal
-  /// @brief Constructor.
-  ///
-  /// O(n) where n is the number of arcs in the builder.
-  /// It can't throw as the memory for the alpha has already been allocated.
-  proto_node(variable_type var, dd::alpha_builder<C, values_type>& builder)
-  noexcept
-    : variable_(var), size_(static_cast<alpha_size_type>(builder.size()))
-  {
-    // Instruct the alpha builder to place it right after the node.
-    builder.consolidate(alpha_addr());
-  }
-
-  /// @internal
-  /// @brief Destructor.
-  ///
-  /// O(n) where n is the number of arcs in the node.
-  ~proto_node()
-  {
-    for (auto& a : *this)
-    {
-      a.~arc<C, values_type>();
-    }
-  }
-
-  /// @brief Get the variable of this node.
-  ///
-  /// O(1).
-  variable_type
-  variable()
-  const noexcept
-  {
-    return variable_;
-  }
+  proto_node(arcs_type&& arcs)
+    : arcs_(std::move(arcs))
+  {}
 
   /// @brief Get the beginning of arcs.
   ///
@@ -104,7 +85,7 @@ public:
   begin()
   const noexcept
   {
-    return reinterpret_cast<const arc<C, values_type>*>(alpha_addr());
+    return arcs_.begin();
   }
 
   /// @brief Get the end of arcs.
@@ -114,49 +95,21 @@ public:
   end()
   const noexcept
   {
-    return reinterpret_cast<const arc<C, values_type>*>(alpha_addr()) + size_;
+    return arcs_.end();
   }
 
-  /// @brief Get the number of arcs.
-  ///
-  /// O(1).
-  alpha_size_type
-  size()
+  const arcs_type&
+  arcs()
   const noexcept
   {
-    return size_;
-  }
-
-  /// @brief Get the number of extra bytes.
-  ///
-  /// These extra extra bytes correspond to the arcs allocated right after this node.
-  std::size_t
-  extra_bytes()
-  const noexcept
-  {
-    return size_ * sizeof(arc<C, values_type>);
-  }
-
-private:
-
-  /// @internal
-  /// @brief Return the address of the alpha function.
-  ///
-  /// O(1).
-  /// The alpha function is located right after the current node, so to compute its address,
-  /// we just have to add the size of a node to the address of the current node.
-  char*
-  alpha_addr()
-  const noexcept
-  {
-    return reinterpret_cast<char*>(const_cast<proto_node*>(this)) + sizeof(proto_node);
+    return arcs_;
   }
 };
 
 /*------------------------------------------------------------------------------------------------*/
 
-/// @brief   Equality of two nodes.
-/// @related node
+/// @brief Equality of two proto_node.
+/// @related proto_node
 ///
 /// O(1) if nodes don't have the same number of arcs; otherwise O(n) where n is the number of
 /// arcs.
@@ -166,22 +119,16 @@ bool
 operator==(const proto_node<C>& lhs, const proto_node<C>& rhs)
 noexcept
 {
-  return lhs.size() == rhs.size() and lhs.variable() == rhs.variable()
-     and std::equal(lhs.begin(), lhs.end(), rhs.begin());
+  return lhs.arcs() == rhs.arcs();
 }
 
-/// @brief   Export a node to a stream.
-/// @related node
+/// @brief Export a proto_node to a stream.
+/// @related proto_node
 template <typename C>
 std::ostream&
 operator<<(std::ostream& os, const proto_node<C>& n)
 {
-  // +n.variable(): widen the type. It's useful to print the values of char and unsigned char types.
-  os << +n.variable() << "[";
-  std::for_each( n.begin(), n.end() - 1
-               , [&](const arc<C, typename C::Values>& a)
-                    {os << a.valuation() << " --> " << a.successor() << " || ";});
-  return os << (n.end() - 1)->valuation() << " --> " << (n.end() - 1)->successor() << "]";
+  return os << "proto_node TODO";
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -192,17 +139,31 @@ namespace std {
 
 /*------------------------------------------------------------------------------------------------*/
 
-/// @brief Hash specialization for sdd::node
+/// @brief Hash specialization for sdd::proto_arc
+template <typename C>
+struct hash<sdd::proto_arc<C>>
+{
+  std::size_t
+  operator()(const sdd::proto_arc<C>& n)
+//  const noexcept(noexcept(sdd::util::hash(n.begin(), n.end())))
+  const
+  {
+    std::size_t seed = sdd::util::hash(n.current_values);
+    sdd::util::hash_combine(seed, n.values);
+    sdd::util::hash_combine(seed, n.successors);
+    return seed;
+  }
+};
+
+/// @brief Hash specialization for sdd::proto_node
 template <typename C>
 struct hash<sdd::proto_node<C>>
 {
   std::size_t
   operator()(const sdd::proto_node<C>& n)
-  const
+  const noexcept(noexcept(sdd::util::hash(n.begin(), n.end())))
   {
-    std::size_t seed = sdd::util::hash(n.variable());
-    sdd::util::hash_combine(seed, n.begin(), n.end());
-    return seed;
+    return sdd::util::hash(n.begin(), n.end());
   }
 };
 

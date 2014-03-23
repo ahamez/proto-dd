@@ -102,7 +102,7 @@ struct LIBSDD_ATTRIBUTE_PACKED nary_op
     // It avoids to perform an iteration only for this task.
 //    if (begin()->index() == SDD<C>::proto_node_index)
 //    {
-    return Operation::template work<const_iterator, proto_node<C>>(begin(), end(), cxt);
+    return Operation::template work<const_iterator, flat_node<C>>(begin(), end(), cxt);
 //    }
 //    else
 //    {

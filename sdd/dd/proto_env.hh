@@ -136,14 +136,14 @@ public:
   }
 
   const value_stack_type&
-  value_stack()
+  values_stack()
   const noexcept
   {
     return ptr_->data().values;
   }
 
   const successor_stack_type&
-  successor_stack()
+  successors_stack()
   const noexcept
   {
     return ptr_->data().successors;

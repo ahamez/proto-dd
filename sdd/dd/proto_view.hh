@@ -110,10 +110,10 @@ private:
     arcs.reserve(node.arcs().size());
 
     // Get the common value to rebuild the values of the current level.
-    const auto env_k = head(env.value_stack());
+    const auto env_k = head(env.values_stack());
 
     // Get the common successor: |0| if there no common successor.
-    const auto env_succ = head(env.successor_stack());
+    const auto env_succ = head(env.successors_stack());
 
     // A buffer of values reused for each arc.
     std::vector<value_type> values_buffer;
@@ -130,11 +130,11 @@ private:
       const auto succ = env_succ == zero<C>() ? head(proto_arc.successors) : env_succ;
 
       // Rebuild successor's values stack
-      typename dd::proto_env<C>::value_stack_type value_stack = pop(env.value_stack());
+      typename dd::proto_env<C>::value_stack_type value_stack = pop(env.values_stack());
       value_stack.rebuild(proto_arc.values, C::rebuild);
 
       // Rebuild successor's successors stack
-      typename dd::proto_env<C>::successor_stack_type successor_stack(env.successor_stack());
+      typename dd::proto_env<C>::successor_stack_type successor_stack(env.successors_stack());
       successor_stack.rebuild( proto_arc.successors
                              , [&](const SDD<C>& v, const SDD<C>& k){return k == zero<C>() ? v : k;}
                              );

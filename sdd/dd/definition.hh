@@ -1,6 +1,7 @@
 #ifndef _SDD_DD_DEFINITION_HH_
 #define _SDD_DD_DEFINITION_HH_
 
+#include <algorithm> // all_of
 #include <cassert>
 #include <tuple>
 
@@ -37,6 +38,7 @@ using flat_node = proto_view<C>;
 //template <typename C>
 //using hierarchical_node = node<C, SDD<C>>;
 
+template <typename C> SDD<C> zero() noexcept;
 template <typename C> SDD<C> one() noexcept;
 
 /*------------------------------------------------------------------------------------------------*/
@@ -448,52 +450,69 @@ private:
     typename proto_node<C>::arcs_type arcs;
     arcs.reserve(builder.size());
 
-    // A temporary holder of values.
-    std::vector<value_type> values_buffer;
-    values_buffer.reserve(builder.size() * 4);
+    // Successors' value stacks.
+    std::vector<std::reference_wrapper<const typename proto_arc<C>::value_stack_type>>
+      succ_values_stacks;
+    succ_values_stacks.reserve(builder.size());
 
-    // Successors' value stacks
-    std::vector<std::reference_wrapper<const typename proto_arc<C>::value_stack_type>> succ_stacks;
-    succ_stacks.reserve(builder.size());
+    // Successors' successors stacks (!).
+    std::vector<std::reference_wrapper<const typename proto_arc<C>::successor_stack_type>>
+      succ_succs_stacks;
+    succ_succs_stacks.reserve(builder.size());
 
-    // Copy all values in a more convenient to use vector.
-    // Also, get a reference to successors' stacks.
+    // Are all successors equal?
+    bool all_succs_equals = true;
+    const auto first_succ = builder.begin()->first;
+
+    // Get a reference to successors' stacks.
     for (const auto& sdd_values : builder)
     {
-      std::copy( sdd_values.second.cbegin(), sdd_values.second.cend()
-               , std::back_inserter(values_buffer));
-
-      succ_stacks.push_back(sdd_values.first.env().value_stack());
+      succ_values_stacks.push_back(sdd_values.first.env().values_stack());
+      succ_succs_stacks.push_back(sdd_values.first.env().successors_stack());
+      all_succs_equals = all_succs_equals and first_succ == sdd_values.first;
     }
 
-    // Find the common value of all values on all arcs of the current alpha builder.
-    const auto k = C::common(values_buffer.cbegin(), values_buffer.cend());
-
-    // Shift all values of the current alpha builder.
+    // Intialize all proto arcs
     for (const auto& sdd_values : builder)
     {
-      values_type values;
+      typename values::values_traits<values_type>::builder values_builder;
+
+      const auto k = C::common(sdd_values.second.cbegin(), sdd_values.second.cend());
       for (const auto& v : sdd_values.second)
       {
-        values.insert(C::shift(v, k));
+        values_builder.insert(C::shift(v, k));
       }
+
       // Construct arc of the proto_dd.
-      arcs.emplace_back( std::move(values)
-                       , sdd_values.first.env().value_stack()
-                       , sdd_values.first.env().successor_stack());
+      arcs.emplace_back( values_type(std::move(values_builder))
+                       , push(sdd_values.first.env().values_stack(), k)
+                       , push( sdd_values.first.env().successors_stack()
+                             , all_succs_equals ? zero<C>() : sdd_values.first));
     }
 
     // Get the value stack to put in environment.
-    value_stack_type new_value_stack;// = dd::common(succ_stacks, C::common<???>);
-    new_value_stack = push(new_value_stack, k);
+    value_stack_type env_value_stack
+      = dd::common( succ_values_stacks
+                  , C::template common<std::vector<unsigned int>::const_iterator>);
 
-    successor_stack_type new_successor_stack;
+    using sdd_cit = typename std::vector<SDD<C>>::const_iterator;
+    successor_stack_type env_succs_stack
+      = dd::common( succ_succs_stacks
+                  , [](sdd_cit begin, sdd_cit end)
+                      {
+                        return std::all_of(begin, end, [&](const SDD<C>& x){return x == *begin;})
+                             ? *begin
+                             : zero<C>();
+                      });
 
-    // Create value stacks of each arc.
+    // Shift stacks on proto arcs with the new environments' stacks
     for (auto& proto_arc : arcs)
     {
-      proto_arc.values.shift(new_value_stack, C::shift);
-      // TODO  => root env successor stack
+      proto_arc.values.shift(env_value_stack, C::shift);
+      proto_arc.successors.shift(env_succs_stack, [](const SDD<C>& lhs, const SDD<C>& rhs)
+                                                    {
+                                                      return rhs == zero<C>() ? lhs : rhs;
+                                                    });
     }
 
     // Finally, we can create and unify the proto_dd.
@@ -502,8 +521,8 @@ private:
     unique_type* u =
       new (addr) unique_type(mem::construct<proto_node<C>>(), std::move(arcs));
     return std::make_tuple( dd::proto_env<C>( new_level
-                                            , std::move(new_value_stack)
-                                            , std::move(new_successor_stack))
+                                            , std::move(env_value_stack)
+                                            , std::move(env_succs_stack))
                           , ptr_type(ut(u)));
   }
 };

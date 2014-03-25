@@ -27,9 +27,10 @@ struct proto_arc
   value_stack_type values;
   successor_stack_type successors;
 
-  proto_arc( values_type&& values, const value_stack_type& value_stack
-           , const successor_stack_type& successors_stack)
-    : current_values(std::move(values)), values(value_stack), successors(successors_stack)
+  proto_arc( values_type&& values, value_stack_type&& value_stack
+           , successor_stack_type&& successors_stack)
+    : current_values(std::move(values)), values(std::move(value_stack))
+    , successors(std::move(successors_stack))
   {}
 };
 

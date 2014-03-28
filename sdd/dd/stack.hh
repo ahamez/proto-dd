@@ -175,7 +175,14 @@ struct hash<sdd::dd::stack<T>>
   operator()(const sdd::dd::stack<T>& s)
   const
   {
-    return sdd::util::hash(s.elements.cbegin(), s.elements.cend());
+    if (s.elements.empty())
+    {
+      return sdd::util::hash(0);
+    }
+    else
+    {
+      return sdd::util::hash(s.elements.cbegin(), s.elements.cend());
+    }
   }
 };
 

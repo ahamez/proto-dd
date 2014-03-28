@@ -23,7 +23,7 @@ struct proto_arc
   using value_stack_type     = dd::stack<value_type>;
   using successor_stack_type = dd::stack<SDD<C>>;
 
-  values_type current_values;
+  const values_type current_values;
   value_stack_type values;
   successor_stack_type successors;
 

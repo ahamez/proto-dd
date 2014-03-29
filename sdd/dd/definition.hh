@@ -450,25 +450,23 @@ private:
     typename proto_node<C>::arcs_type arcs;
     arcs.reserve(builder.size());
 
-    // Successors' value stacks.
+    // Arcs' values stacks.
     std::vector<std::reference_wrapper<const typename proto_arc<C>::value_stack_type>>
-      succ_values_stacks;
-    succ_values_stacks.reserve(builder.size());
+      arcs_values_stacks;
+    arcs_values_stacks.reserve(builder.size());
 
-    // Successors' successors stacks (!).
+    // Arcs' successors stacks.
     std::vector<std::reference_wrapper<const typename proto_arc<C>::successor_stack_type>>
-      succ_succs_stacks;
-    succ_succs_stacks.reserve(builder.size());
+      arcs_succs_stacks;
+    arcs_succs_stacks.reserve(builder.size());
 
     // Are all successors equal?
     bool all_succs_equals = true;
     const auto first_succ = builder.begin()->first;
 
-    // Get a reference to successors' stacks.
+    // Are all successors equal? We need this information to compute successors stacks.
     for (const auto& sdd_values : builder)
     {
-      succ_values_stacks.push_back(sdd_values.first.env().values_stack());
-      succ_succs_stacks.push_back(sdd_values.first.env().successors_stack());
       all_succs_equals = all_succs_equals and first_succ == sdd_values.first;
     }
 
@@ -488,16 +486,20 @@ private:
                        , push(sdd_values.first.env().values_stack(), k)
                        , push( sdd_values.first.env().successors_stack()
                              , all_succs_equals ? zero<C>() : sdd_values.first));
+
+      // Get a reference to this arc's stacks.
+      arcs_values_stacks.push_back(arcs.back().values);
+      arcs_succs_stacks.push_back(arcs.back().successors);
     }
 
     // Get the value stack to put in environment.
     value_stack_type env_value_stack
-      = dd::common( succ_values_stacks
+      = dd::common( arcs_values_stacks
                   , C::template common<std::vector<unsigned int>::const_iterator>);
 
     using sdd_cit = typename std::vector<SDD<C>>::const_iterator;
     successor_stack_type env_succs_stack
-      = dd::common( succ_succs_stacks
+      = dd::common( arcs_succs_stacks
                   , [](sdd_cit begin, sdd_cit end)
                       {
                         return std::all_of(begin, end, [&](const SDD<C>& x){return x == *begin;})

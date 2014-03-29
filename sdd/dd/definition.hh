@@ -460,16 +460,6 @@ private:
       arcs_succs_stacks;
     arcs_succs_stacks.reserve(builder.size());
 
-    // Are all successors equal?
-    bool all_succs_equals = true;
-    const auto first_succ = builder.begin()->first;
-
-    // Are all successors equal? We need this information to compute successors stacks.
-    for (const auto& sdd_values : builder)
-    {
-      all_succs_equals = all_succs_equals and first_succ == sdd_values.first;
-    }
-
     // Intialize all proto arcs
     for (const auto& sdd_values : builder)
     {
@@ -485,7 +475,8 @@ private:
       arcs.emplace_back( values_type(std::move(values_builder))
                        , push(sdd_values.first.env().values_stack(), k)
                        , push( sdd_values.first.env().successors_stack()
-                             , all_succs_equals ? zero<C>() : sdd_values.first));
+                             , sdd_values.first
+                             ));
 
       // Get a reference to this arc's stacks.
       arcs_values_stacks.push_back(arcs.back().values);

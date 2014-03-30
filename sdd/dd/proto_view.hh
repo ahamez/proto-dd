@@ -102,6 +102,7 @@ private:
 
   /// @todo On the fly generation of arcs
   /// @todo A cache?
+  /// @todo stack::pop() doesn't need to be functional
   static
   arcs_type
   mk_arcs(const env_type& env, const proto_node<C>& node)
@@ -109,41 +110,36 @@ private:
     arcs_type arcs;
     arcs.reserve(node.arcs().size());
 
-    // Get the common value to rebuild the values of the current level.
-    const auto env_k = head(env.values_stack());
-
-    // Get the common successor: |0| if there no common successor.
-    const auto env_succ = head(env.successors_stack());
-
     // A buffer of values reused for each arc.
     std::vector<value_type> values_buffer;
     values_buffer.reserve(node.begin()->current_values.size() * 4);
 
     for (const auto& proto_arc : node)
     {
-      // Rebuild values of the current arc.
+      // Rebuild the stacks needed to construct this arc.
+      auto values_stack = proto_arc.values;
+      values_stack.rebuild(env.values_stack(), C::rebuild);
+
+      auto succs_stack = proto_arc.successors;
+      succs_stack.rebuild(env.successors_stack(), [](const SDD<C>& lhs, const SDD<C>& rhs)
+                                                    {
+                                                      return rhs == zero<C>() ? lhs : rhs;
+                                                    });
+
+      // Get the values of the current level.
+      const auto k = head(values_stack);
       std::transform( proto_arc.current_values.cbegin(), proto_arc.current_values.cend()
                     , std::back_inserter(values_buffer)
-                    , [&](value_type v){return C::rebuild(v, env_k);});
+                    , [&](value_type v){return C::rebuild(v, k);});
 
-      // Get the successor of the current arc.
-      const auto succ = env_succ == zero<C>() ? head(proto_arc.successors) : env_succ;
-
-      // Rebuild successor's values stack
-      typename dd::proto_env<C>::value_stack_type value_stack = pop(env.values_stack());
-      value_stack.rebuild(proto_arc.values, C::rebuild);
-
-      // Rebuild successor's successors stack
-      typename dd::proto_env<C>::successor_stack_type successor_stack(env.successors_stack());
-      successor_stack.rebuild( proto_arc.successors
-                             , [&](const SDD<C>& v, const SDD<C>& k){return k == zero<C>() ? v : k;}
-                             );
+      // Get the successor of the current level.
+      const auto succ = head(succs_stack);
 
       // The current arc is complete.
       arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
                        , SDD<C>(succ.ptr(), dd::proto_env<C>( env.level() - 1
-                                                            , std::move(value_stack)
-                                                            , std::move(successor_stack))));
+                                                            , std::move(pop(values_stack))
+                                                            , std::move(pop(succs_stack)))));
 
       // Will be re-used on next iteration.
       values_buffer.clear();
@@ -153,13 +149,6 @@ private:
 };
 
 /*------------------------------------------------------------------------------------------------*/
-
-//template <typename C>
-//const node<C, typename C::Values>&
-//view(const proto_node<C>& n, const dd::proto_env<C>& env)
-//{
-//  return reinterpret_cast<const node<C, typename C::Values>&>(n);
-//}
 
 template <typename C>
 inline

@@ -133,7 +133,28 @@ template <typename C>
 std::ostream&
 operator<<(std::ostream& os, const proto_node<C>& n)
 {
-  return os << "proto_node TODO";
+  os << "proto_node " << &n << ":" << std::endl;
+  for (const auto& arc : n)
+  {
+    os << "  arc " << &n << ":" << std::endl;
+    os << "    current values: " << arc.current_values << std::endl;
+    os << "    values stack: " << arc.values << std::endl;
+    os << "    successors stack: |";
+    for (const auto& successor : arc.successors.elements)
+    {
+      os << &successor << ",";
+    }
+    os << "|";
+  }
+  os << std::endl;
+  for (const auto& arc : n)
+  {
+    for (const auto& successor : arc.successors.elements)
+    {
+      os << successor;
+    }
+  }
+  return os << std::endl;
 }
 
 /*------------------------------------------------------------------------------------------------*/

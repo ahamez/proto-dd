@@ -21,6 +21,7 @@
 #include "sdd/mem/variant.hh"
 #include "sdd/order/order.hh"
 #include "sdd/values/empty.hh"
+#include "sdd/values/values_traits.hh"
 
 // Include for forwards at the end of the file.
 
@@ -655,10 +656,6 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
     {
       throw top<C>(lhs, rhs);
     }
-  }
-  else
-  {
-    assert(false);
   }
 
   return lhs_index;

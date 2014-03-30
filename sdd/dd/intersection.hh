@@ -42,8 +42,6 @@ struct LIBSDD_ATTRIBUTE_PACKED intersection_op_impl
     // Result accumulator, initialized with the first operand.
     SDD<C> res = *operands_cit;
 
-//    const variable_type variable =
-//	    mem::variant_cast<node_type>(**operands_cit).variable();
     const variable_type variable = operands_cit->env().level();
 
 
@@ -58,9 +56,8 @@ struct LIBSDD_ATTRIBUTE_PACKED intersection_op_impl
       // Cleanup for the next usage.
       su.clear();
 
-//      const node_type& lhs = mem::variant_cast<node_type>(*res);
       const auto lhs = res.view();
-      const node_type& rhs = mem::variant_cast<node_type>(**operands_cit);
+      const auto rhs = operands_cit->view();
 
       for (auto& lhs_arc : lhs)
       {

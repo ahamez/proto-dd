@@ -65,7 +65,7 @@ public:
   variable()
   const noexcept
   {
-    return env_.level();
+    return env_.level() - 1;
   }
 
   /// @brief Get the beginning of arcs.

@@ -107,14 +107,15 @@ private:
   arcs_type
   mk_arcs(const env_type& env, const proto_node<C>& node)
   {
+    assert((env.level() - 1) < env.level() && "Overflow");
+    assert(node.arcs().size() >= 1 && "Empty proto_node");
+
     arcs_type arcs;
     arcs.reserve(node.arcs().size());
 
     // A buffer of values reused for each arc.
     std::vector<value_type> values_buffer;
     values_buffer.reserve(node.begin()->current_values.size() * 4);
-
-    assert((env.level() - 1) < env.level() && "Overflow.");
 
     for (const auto& proto_arc : node)
     {

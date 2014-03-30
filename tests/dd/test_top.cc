@@ -95,34 +95,35 @@ TYPED_TEST(top_test, sum_terminal)
 
 TYPED_TEST(top_test, sum)
 {
-  {
-    SDD x('a', {0}, one);
-    SDD y('b', {1}, one);
-    ASSERT_THROW(x + y, sdd::top<conf>);
-    try
-    {
-      x + y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', {0}, SDD('b', {0}, one));
-    SDD y('a', {0}, SDD('a', {1}, one));
-    ASSERT_THROW(x + y, sdd::top<conf>);
-    try
-    {
-      x + y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+  // Can't check variable compatibility with proto_nodes.
+//  {
+//    SDD x('a', {0}, one);
+//    SDD y('b', {1}, one);
+//    ASSERT_THROW(x + y, sdd::top<conf>);
+//    try
+//    {
+//      x + y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', {0}, SDD('b', {0}, one));
+//    SDD y('a', {0}, SDD('a', {1}, one));
+//    ASSERT_THROW(x + y, sdd::top<conf>);
+//    try
+//    {
+//      x + y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 //  {
 //    SDD x1('x', SDD('a', {0}, one), one);
 //    SDD x2('x', SDD('b', {0}, one), one);
@@ -245,36 +246,36 @@ TYPED_TEST(top_test, difference_terminal)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(top_test, difference)
-{
-  {
-    SDD x('a', {0}, one);
-    SDD y('b', {1}, one);
-    ASSERT_THROW(x - y, sdd::top<conf>);
-    try
-    {
-      x - y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', {0,1}, SDD('b', {0}, one));
-    SDD y('a', {1}, SDD('a', {1}, one));
-    ASSERT_THROW(x - y, sdd::top<conf>);
-    try
-    {
-      x - y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//TYPED_TEST(top_test, difference)
+//{
+//  {
+//    SDD x('a', {0}, one);
+//    SDD y('b', {1}, one);
+//    ASSERT_THROW(x - y, sdd::top<conf>);
+//    try
+//    {
+//      x - y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', {0,1}, SDD('b', {0}, one));
+//    SDD y('a', {1}, SDD('a', {1}, one));
+//    ASSERT_THROW(x - y, sdd::top<conf>);
+//    try
+//    {
+//      x - y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 //  {
 //    SDD x1('x', SDD('a', {0}, one), one);
 //    SDD x2('x', SDD('b', {0}, one), one);
@@ -303,7 +304,7 @@ TYPED_TEST(top_test, difference)
 //      ASSERT_NE(nullptr, t.what());
 //    }
 //  }
-}
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -398,36 +399,36 @@ TYPED_TEST(top_test, intersection_terminal)
 
 /*------------------------------------------------------------------------------------------------*/
 
-TYPED_TEST(top_test, intersection)
-{
-  {
-    SDD x('a', {0}, one);
-    SDD y('b', {1}, one);
-    ASSERT_THROW(x - y, sdd::top<conf>);
-    try
-    {
-      x & y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
-  {
-    SDD x('a', {0,1}, SDD('b', {0}, one));
-    SDD y('a', {1}, SDD('a', {1}, one));
-    ASSERT_THROW(x & y, sdd::top<conf>);
-    try
-    {
-      x & y;
-    }
-    catch(sdd::top<conf>& t)
-    {
-      ASSERT_NE(t.lhs(), t.rhs());
-      ASSERT_NE(nullptr, t.what());
-    }
-  }
+//TYPED_TEST(top_test, intersection)
+//{
+//  {
+//    SDD x('a', {0}, one);
+//    SDD y('b', {1}, one);
+//    ASSERT_THROW(x - y, sdd::top<conf>);
+//    try
+//    {
+//      x & y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
+//  {
+//    SDD x('a', {0,1}, SDD('b', {0}, one));
+//    SDD y('a', {1}, SDD('a', {1}, one));
+//    ASSERT_THROW(x & y, sdd::top<conf>);
+//    try
+//    {
+//      x & y;
+//    }
+//    catch(sdd::top<conf>& t)
+//    {
+//      ASSERT_NE(t.lhs(), t.rhs());
+//      ASSERT_NE(nullptr, t.what());
+//    }
+//  }
 //  {
 //    SDD x1('x', SDD('a', {0}, one), one);
 //    SDD x2('x', SDD('b', {0}, one), one);
@@ -456,7 +457,7 @@ TYPED_TEST(top_test, intersection)
 //      ASSERT_NE(nullptr, t.what());
 //    }
 //  }
-}
+//}
 
 /*------------------------------------------------------------------------------------------------*/
 

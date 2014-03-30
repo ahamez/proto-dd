@@ -346,6 +346,7 @@ public:
   view()
   const
   {
+    assert(index() == proto_node_index && "Attempt to convert a non-proto_node");
     return proto_view<C>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
   }
 

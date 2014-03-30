@@ -38,28 +38,31 @@ struct difference_visitor
   {}
 
   /// @brief Perform the difference operation.
-  template <typename Valuation>
+//  template <typename Valuation>
   SDD<C>
-  operator()( const node<C, Valuation>& lhs, const node<C, Valuation>& rhs
+//  operator()( const node<C, Valuation>& lhs, const node<C, Valuation>& rhs
+//            , const SDD<C>& lhs_orig, const SDD<C>& rhs_orig)
+  operator()( const flat_node<C>& lhs, const flat_node<C>& rhs
             , const SDD<C>& lhs_orig, const SDD<C>& rhs_orig)
   const
   {
     // Check if both operands are compatible.
     if (not (lhs.variable() == rhs.variable()))
     {
+      std::cerr << "not (lhs.variable() == rhs.variable())" << std::endl;
       throw top<C>(lhs_orig, rhs_orig);
     }
 
     // Compute union of all rhs valuations.
-    sum_builder<C, Valuation> sum_builder;
+    sum_builder<C, typename C::Values> sum_builder;
     sum_builder.reserve(rhs.size());
     for (auto& rhs_arc : rhs)
     {
       sum_builder.add(rhs_arc.valuation());
     }
-    const Valuation rhs_union = sum(cxt_, std::move(sum_builder));
+    const typename C::Values rhs_union = sum(cxt_, std::move(sum_builder));
 
-    square_union<C, Valuation> su;
+    square_union<C, typename C::Values> su;
 
     // We iterate two times on lhs's alpha, and we possibly add each arc, modified, two times.
     // First when removing rhs_union, then when we look for all common parts).
@@ -68,7 +71,7 @@ struct difference_visitor
     // For each valuation of lhs, remove the quantity rhs_union.
     for (auto& lhs_arc : lhs)
     {
-      Valuation tmp = difference(cxt_, lhs_arc.valuation(), rhs_union);
+      typename C::Values tmp = difference(cxt_, lhs_arc.valuation(), rhs_union);
       if (not values::empty_values(tmp))
       {
         su.add(lhs_arc.successor(), std::move(tmp));
@@ -80,10 +83,10 @@ struct difference_visitor
     {
       for (auto& rhs_arc : rhs)
       {
-        intersection_builder<C, Valuation> inter_builder;
+        intersection_builder<C, typename C::Values> inter_builder;
         inter_builder.add(lhs_arc.valuation());
         inter_builder.add(rhs_arc.valuation());
-        Valuation tmp_val = intersection(cxt_, std::move(inter_builder));
+        typename C::Values tmp_val = intersection(cxt_, std::move(inter_builder));
         if (not values::empty_values(tmp_val))
         {
           SDD<C> tmp_succ = difference(cxt_, lhs_arc.successor(), rhs_arc.successor());

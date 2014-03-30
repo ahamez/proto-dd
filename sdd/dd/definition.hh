@@ -442,9 +442,9 @@ private:
     using successor_stack_type = typename dd::proto_env<C>::successor_stack_type;
     using value_type = typename C::Values::value_type;
 
-    // Compute the new level (level 0 is above |1|).
+    // Compute the new level (level 1 is above |1|).
     const auto new_level = builder.begin()->first == one<C>()
-                         ? 0
+                         ? 1
                          : get_env(*builder.begin()).level() + 1;
 
     // The resulting canonized arcs.

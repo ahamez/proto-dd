@@ -114,6 +114,8 @@ private:
     std::vector<value_type> values_buffer;
     values_buffer.reserve(node.begin()->current_values.size() * 4);
 
+    assert((env.level() - 1) < env.level() && "Overflow.");
+
     for (const auto& proto_arc : node)
     {
       // Rebuild the stacks needed to construct this arc.

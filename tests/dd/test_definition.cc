@@ -107,8 +107,8 @@ TYPED_TEST(definition_test, check_compatibility)
 //    ASSERT_THROW(check_compatibility(one, SDD(0, SDD(1, {1}, one), one)), sdd::top<conf>);
 //    ASSERT_THROW(check_compatibility(SDD(0, SDD(1, {1}, one), one), one), sdd::top<conf>);
 
-    ASSERT_THROW(check_compatibility(SDD(0, {1}, one), SDD(1, {1}, one)), sdd::top<conf>);
-    ASSERT_THROW(check_compatibility(SDD(1, {1}, one), SDD(0, {1}, one)), sdd::top<conf>);
+//    ASSERT_THROW(check_compatibility(SDD(0, {1}, one), SDD(1, {1}, one)), sdd::top<conf>);
+//    ASSERT_THROW(check_compatibility(SDD(1, {1}, one), SDD(0, {1}, one)), sdd::top<conf>);
 
 //    ASSERT_THROW( check_compatibility(SDD(0, SDD(1, {1}, one), one), SDD(1, one, one))
 //                , sdd::top<conf>);

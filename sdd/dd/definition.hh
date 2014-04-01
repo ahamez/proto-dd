@@ -424,17 +424,6 @@ private:
   }
 
   /// @internal
-  /// @brief Get the proto environment from an alpha_builder arc.
-  static
-  const dd::proto_env<C>&
-  get_env(const std::pair<SDD<C>, values_type>& p)
-  noexcept
-  {
-    return p.first.env();
-  }
-
-
-  /// @internal
   static
   tuple_type
   unify_proto(dd::alpha_builder<C, values_type>&& builder)
@@ -446,7 +435,7 @@ private:
     // Compute the new level (level 1 is above |1|).
     const auto new_level = builder.begin()->first == one<C>()
                          ? 1
-                         : get_env(*builder.begin()).level() + 1;
+                         : builder.begin()->first.env().level() + 1;
 
     // The resulting canonized arcs.
     typename proto_node<C>::arcs_type arcs;

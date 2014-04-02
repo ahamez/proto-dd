@@ -13,6 +13,32 @@ namespace sdd {
 /*------------------------------------------------------------------------------------------------*/
 
 /// @internal
+/// @brief Help identify a proto_view.
+template <typename C>
+struct proto_view_identity
+{
+  using env_type = dd::proto_env<C, SDD<C>>;
+
+  const char* env;
+  const char* node;
+
+  proto_view_identity(const env_type& env, const proto_node<C>& node)
+  noexcept
+    : env(reinterpret_cast<const char*>(&(*env)))
+    , node(reinterpret_cast<const char*>(&node))
+  {}
+
+  bool
+  operator==(const proto_view_identity& other)
+  const noexcept
+  {
+    return env == other.env and node == other.node;
+  }
+};
+
+/*------------------------------------------------------------------------------------------------*/
+
+/// @internal
 template <typename C>
 class proto_view final
 {
@@ -35,6 +61,7 @@ public:
   /// @brief A (const) iterator on the arcs of this node.
   using const_iterator = typename arcs_type::const_iterator;
 
+  using id_type = proto_view_identity<C>;
 
 private:
 
@@ -46,11 +73,14 @@ private:
   /// @brief Store the temporary arcs of this view.
   const arcs_type arcs_;
 
+  /// @brief Keep the original proto_node for identifications purposes.
+  const proto_node<C>& node_;
+
 public:
 
   proto_view(const env_type& env, const proto_node<C>& node)
   noexcept
-    : env_(env), arcs_(mk_arcs(env, node))
+    : env_(env), arcs_(mk_arcs(env, node)), node_(node)
   {}
 
   // Move a proto_view.
@@ -95,6 +125,15 @@ public:
   const noexcept
   {
     return arcs_.size();
+  }
+
+  /// @brief Get an value that uniquely identify any proto_view created with the same environment
+  /// and proto_node.
+  id_type
+  id()
+  const noexcept
+  {
+    return proto_view_identity<C>(env_, node_);
   }
 
 private:
@@ -180,5 +219,27 @@ operator<<(std::ostream& os, const proto_view<C>& n)
 /*------------------------------------------------------------------------------------------------*/
 
 } // namespace sdd
+
+namespace std {
+
+/*------------------------------------------------------------------------------------------------*/
+
+/// @brief Hash specialization for sdd::proto_view_identity
+template <typename C>
+struct hash<sdd::proto_view_identity<C>>
+{
+  std::size_t
+  operator()(const sdd::proto_view_identity<C>& id)
+  const noexcept
+  {
+    std::size_t seed = sdd::util::hash(id.env);
+    sdd::util::hash_combine(seed, id.node);
+    return seed;
+  }
+};
+
+/*------------------------------------------------------------------------------------------------*/
+
+} // namespace std
 
 #endif // _SDD_DD_PROTO_VIEW_HH_

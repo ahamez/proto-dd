@@ -412,7 +412,9 @@ private:
       arcs.emplace_back( values_type(std::move(values_builder))
                        , push(sdd_values.first.env().values_stack(), k)
                        , push( sdd_values.first.env().successors_stack()
-                             , sdd_values.first
+//                             , sdd_values.first
+                             , SDD<C>( sdd_values.first.ptr()
+                                     , proto_env_type::empty_ptr())
                              ));
 
       // Get a reference to this arc's stacks.

@@ -19,10 +19,10 @@ struct count_combinations_visitor
   /// @brief Required by mem::variant visitor mechanism.
   using result_type = boost::multiprecision::cpp_int;
 
+  using node_id_type = typename proto_view<C>::id_type;
+
   /// @brief A cache is used to speed up the computation.
-  ///
-  /// We use the addresses of nodes as key. It's legit because nodes are unified and immutable.
-  mutable std::unordered_map<const char*, result_type> cache_;
+  mutable std::unordered_map<node_id_type, result_type> cache_;
 
   /// @brief Error case.
   ///
@@ -49,7 +49,7 @@ struct count_combinations_visitor
   operator()(const flat_node<C>& n)
   const
   {
-    const auto insertion = cache_.emplace(reinterpret_cast<const char*>(&n), 0);
+    const auto insertion = cache_.emplace(n.id(), 0);
     if (insertion.second)
     {
       for (const auto& arc : n)
@@ -60,21 +60,6 @@ struct count_combinations_visitor
     return insertion.first->second;
   }
 
-//  /// @brief The number of paths for a hierarchical SDD.
-//  result_type
-//  operator()(const hierarchical_node<C>& n)
-//  const
-//  {
-//    const auto insertion = cache_.emplace(reinterpret_cast<const char*>(&n), 0);
-//    if (insertion.second)
-//    {
-//      for (const auto& arc : n)
-//      {
-//        insertion.first->second += visit(*this, arc.valuation()) * visit(*this, arc.successor());
-//      }
-//    }
-//    return insertion.first->second;
-//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

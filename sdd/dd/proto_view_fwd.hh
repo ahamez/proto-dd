@@ -9,7 +9,6 @@ namespace sdd {
 template <typename C>
 class proto_view;
 
-
 /*------------------------------------------------------------------------------------------------*/
 
 } // namespace sdd

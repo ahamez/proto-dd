@@ -58,11 +58,11 @@ struct to_dot_visitor
     {
       const auto id = ++last_id_;
       insertion.first->second = id;
+      os_ << "node_" << id << " [label=\"" << +n.variable() << "\"];" << std::endl;
       for (const auto& arc : n)
       {
         const auto succ = visit(*this, arc.successor());
-        os_ << "node_" << id << " [label=\"" << +n.variable() << "\"];" << std::endl
-            << "node_" << id << " -> " << "node_" << succ
+        os_ << "node_" << id << " -> " << "node_" << succ
             << " [label=\"" << arc.valuation() << "\"];"
             << std::endl;
       }

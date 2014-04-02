@@ -1,7 +1,6 @@
 #ifndef _SDD_DD_PROTO_ENV_HH_
 #define _SDD_DD_PROTO_ENV_HH_
 
-#include "sdd/dd/definition_fwd.hh"
 #include "sdd/dd/stack.hh"
 #include "sdd/mem/ptr.hh"
 #include "sdd/mem/ref_counted.hh"
@@ -9,15 +8,6 @@
 
 namespace sdd { namespace dd {
 
-/*------------------------------------------------------------------------------------------------*/
-
-//template <typename C>
-//struct sparse_value<SDD<C>>
-//{
-//  using value_type = SDD<C>;
-//  static value_type default_value() noexcept {return zero<C>();}
-//};
-//
 /*------------------------------------------------------------------------------------------------*/
 
 /// @internal
@@ -57,13 +47,13 @@ struct internal_proto_env
 
 /// @internal
 /// @brief A unified proto environment.
-template <typename C>
+template <typename C, typename Successor>
 class proto_env
 {
 public:
 
   using value_type = typename C::Values::value_type;
-  using successor_type = SDD<C>;
+  using successor_type = Successor;
 
   using data_type   = internal_proto_env<value_type, successor_type>;
   using unique_type = mem::ref_counted<data_type>;
@@ -167,32 +157,32 @@ private:
 
 /// @internal
 /// @related proto_env
-template <typename C>
+template <typename C, typename Successor>
 inline
-proto_env<C>
+proto_env<C, Successor>
 empty_proto_env()
 {
-  return proto_env<C>(proto_env<C>::empty_ptr());
+  return proto_env<C, Successor>(proto_env<C, Successor>::empty_ptr());
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
 /// @internal
 /// @related proto_env
-template <typename C>
+template <typename C, typename Successor>
 inline
 bool
-operator==(const proto_env<C>& lhs, const proto_env<C>& rhs)
+operator==(const proto_env<C, Successor>& lhs, const proto_env<C, Successor>& rhs)
 {
   return lhs.ptr() == rhs.ptr();
 }
 
 /// @internal
 /// @related env
-template <typename C>
+template <typename C, typename Successor>
 inline
 bool
-operator<(const proto_env<C>& lhs, const proto_env<C>& rhs)
+operator<(const proto_env<C, Successor>& lhs, const proto_env<C, Successor>& rhs)
 {
   return lhs.ptr() < rhs.ptr();
 }
@@ -227,11 +217,11 @@ struct hash<sdd::dd::internal_proto_env<Value, Successor>>
 
 /// @internal
 /// @brief Hash specialization for sdd::dd::proto_env
-template <typename C>
-struct hash<sdd::dd::proto_env<C>>
+template <typename C, typename Successor>
+struct hash<sdd::dd::proto_env<C, Successor>>
 {
   std::size_t
-  operator()(const sdd::dd::proto_env<C>& c)
+  operator()(const sdd::dd::proto_env<C, Successor>& c)
   const noexcept
   {
     return sdd::util::hash(c.ptr());

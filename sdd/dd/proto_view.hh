@@ -31,7 +31,7 @@ public:
   using valuation_type = values_type;
   using value_type = typename values_type::value_type;
 
-  using env_type = dd::proto_env<C>;
+  using env_type = dd::proto_env<C, SDD<C>>;
   using arcs_type = std::vector<arc<C, values_type>>;
 
   /// @brief The type of the variable of this node.
@@ -140,9 +140,9 @@ private:
 
       // The current arc is complete.
       arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
-                       , SDD<C>(succ.ptr(), dd::proto_env<C>( env.level() - 1
-                                                            , std::move(pop(values_stack))
-                                                            , std::move(pop(succs_stack)))));
+                       , SDD<C>(succ.ptr(), env_type( env.level() - 1
+                                                    , std::move(pop(values_stack))
+                                                    , std::move(pop(succs_stack)))));
 
       // Will be re-used on next iteration.
       values_buffer.clear();
@@ -153,10 +153,10 @@ private:
 
 /*------------------------------------------------------------------------------------------------*/
 
-template <typename C>
+template <typename C, typename Successor>
 inline
 proto_view<C>
-view(const proto_node<C>& n, const dd::proto_env<C>& env)
+view(const proto_node<C>& n, const dd::proto_env<C, Successor>& env)
 {
   return {env, n};
 }

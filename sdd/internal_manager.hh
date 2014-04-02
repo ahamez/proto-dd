@@ -31,10 +31,10 @@ struct internal_manager
   internal_manager& operator=(const internal_manager&&) = delete;
 
   /// @brief The type of a unified proto environment.
-  using proto_env_unique_type = typename dd::proto_env<C>::unique_type;
+  using proto_env_unique_type = typename dd::proto_env<C, SDD<C>>::unique_type;
 
   /// @brief The type of a smart pointer to a unified proto environment.
-  using proto_env_ptr_type = typename dd::proto_env<C>::ptr_type;
+  using proto_env_ptr_type = typename dd::proto_env<C, SDD<C>>::ptr_type;
 
   /// @brief The type of a unified SDD.
   using sdd_unique_type = typename SDD<C>::unique_type;

@@ -89,7 +89,7 @@ public:
 
   /// @internal
   /// @brief The type of the environment used to reconstruct a flat SDD.
-  using proto_env_type = dd::proto_env<C>;
+  using proto_env_type = dd::proto_env<C, SDD>;
 
   /// @brief The type of variables.
   using variable_type = typename C::variable_type;
@@ -112,7 +112,7 @@ public:
 
   /// @brief Default constructor.
   SDD()
-    : env_(dd::empty_proto_env<C>())
+    : env_(dd::empty_proto_env<C, SDD>())
     , ptr_(zero_ptr())
   {}
 
@@ -135,7 +135,7 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, values_type&& val, const SDD& succ)
-    : env_(dd::empty_proto_env<C>())
+    : env_(dd::empty_proto_env<C, SDD>())
 //    , ptr_(create_node(var, std::move(val), succ))
     , ptr_(zero_ptr())
   {
@@ -150,7 +150,7 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, const values_type& val, const SDD& succ)
-    : env_(dd::empty_proto_env<C>())
+    : env_(dd::empty_proto_env<C, SDD>())
 //    , ptr_(create_node(var, val, succ))
     , ptr_(zero_ptr())
   {
@@ -172,7 +172,7 @@ public:
   /// @brief Construct an SDD with an order.
   template <typename Initializer>
   SDD(const order<C>& o, const Initializer& init)
-    : env_(dd::empty_proto_env<C>())
+    : env_(dd::empty_proto_env<C, SDD>())
     , ptr_(one_ptr())
   {
     if (o.empty()) // base case of the recursion, ptr_ is defaulted to |1|
@@ -239,7 +239,7 @@ public:
 //  {}
 
   /// @internal
-  SDD(const ptr_type& ptr, const dd::proto_env<C>& env)
+  SDD(const ptr_type& ptr, const proto_env_type& env)
   noexcept
     : env_(env)
     , ptr_(ptr)
@@ -254,7 +254,7 @@ public:
 //  template <typename Valuation>
 //  SDD(const variable_type& var, dd::alpha_builder<C, Valuation>&& builder)
   SDD(variable_type var, dd::alpha_builder<C, values_type>&& builder)
-    : env_(dd::empty_proto_env<C>())
+    : env_(dd::empty_proto_env<C, SDD>())
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, std::move(builder));
@@ -366,7 +366,7 @@ private:
     if (succ.empty() or values::empty_values(val))
     {
 //      return zero_ptr();
-      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
     }
     else
     {
@@ -414,7 +414,7 @@ private:
   {
     if (builder.empty())
     {
-      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
     }
     else
     {
@@ -428,8 +428,8 @@ private:
   tuple_type
   unify_proto(dd::alpha_builder<C, values_type>&& builder)
   {
-    using value_stack_type = typename dd::proto_env<C>::value_stack_type;
-    using successor_stack_type = typename dd::proto_env<C>::successor_stack_type;
+    using value_stack_type = typename proto_env_type::value_stack_type;
+    using successor_stack_type = typename proto_env_type::successor_stack_type;
     using value_type = typename C::Values::value_type;
 
     // Compute the new level (level 1 is above |1|).
@@ -504,9 +504,9 @@ private:
     char* addr = ut.allocate(sizeof(proto_node<C>));
     unique_type* u =
       new (addr) unique_type(mem::construct<proto_node<C>>(), std::move(arcs));
-    return std::make_tuple( dd::proto_env<C>( new_level
-                                            , std::move(env_value_stack)
-                                            , std::move(env_succs_stack))
+    return std::make_tuple( proto_env_type( new_level
+                                          , std::move(env_value_stack)
+                                          , std::move(env_succs_stack))
                           , ptr_type(ut(u)));
   }
 };
@@ -586,7 +586,7 @@ SDD<C>
 zero()
 noexcept
 {
-  return {SDD<C>::zero_ptr(), dd::empty_proto_env<C>()};
+  return {SDD<C>::zero_ptr(), dd::empty_proto_env<C, SDD<C>>()};
 }
 
 /// @brief Return the |1| terminal.
@@ -599,7 +599,7 @@ SDD<C>
 one()
 noexcept
 {
-  return {SDD<C>::one_ptr(), dd::empty_proto_env<C>()};
+  return {SDD<C>::one_ptr(), dd::empty_proto_env<C, SDD<C>>()};
 }
 
 /*------------------------------------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 #ifndef _SDD_DD_TOOLS_DOT_SDD_HH_
 #define _SDD_DD_TOOLS_DOT_SDD_HH_
 
-#include <unordered_set>
+#include <unordered_map>
 
 #include "sdd/dd/definition.hh"
 
@@ -14,19 +14,22 @@ template <typename C>
 struct to_dot_visitor
 {
   /// @brief Required by mem::variant visitor mechanism.
-  using result_type = const void*;
+  using result_type = unsigned int;
+
+  /// @brief How to identify a node.
+  using node_id_type = typename proto_view<C>::id_type;
 
   /// @brief A cache is necessary to to know if a node has already been encountered.
-  ///
-  /// We use the addresses of nodes as key. It's legit because nodes are unified and immutable.
-  mutable std::unordered_set<const void*> visited_;
+  mutable std::unordered_map<node_id_type, unsigned int> cache_;
+
+  mutable unsigned int last_id_;
 
   /// @brief The stream to export to.
   std::ostream& os_;
 
   /// @brief Constructor.
   to_dot_visitor(std::ostream& os)
-    : visited_(), os_(os)
+    : cache_(), last_id_(1), os_(os)
   {}
 
   /// @brief |0|.
@@ -34,14 +37,7 @@ struct to_dot_visitor
   operator()(const zero_terminal<C>& n)
   const
   {
-    const auto addr = reinterpret_cast<const void*>(&n);
-    const auto search = visited_.find(addr);
-    if (search == visited_.end())
-    {
-      os_ << "node_" << addr << " [shape=square,label=\"0\"];" << std::endl;
-      visited_.emplace_hint(search, addr);
-    }
-    return addr;
+    assert(false);
   }
 
   /// @brief |1|.
@@ -49,14 +45,7 @@ struct to_dot_visitor
   operator()(const one_terminal<C>& n)
   const
   {
-    const auto addr = reinterpret_cast<const void*>(&n);
-    const auto search = visited_.find(addr);
-    if (search == visited_.end())
-    {
-      os_ << "node_" << addr << " [shape=square,label=\"1\"];" << std::endl;
-      visited_.emplace_hint(search, addr);
-    }
-    return addr;
+    return 1;
   }
 
   /// @brief Flat SDD.
@@ -64,31 +53,22 @@ struct to_dot_visitor
   operator()(const flat_node<C>& n)
   const
   {
-    const auto addr = reinterpret_cast<const void*>(&n);
-    const auto search = visited_.find(addr);
-    if (search == visited_.end())
+    auto insertion = cache_.emplace(n.id(), 0);
+    if (insertion.second)
     {
+      const auto id = ++last_id_;
+      insertion.first->second = id;
       for (const auto& arc : n)
       {
         const auto succ = visit(*this, arc.successor());
-        os_ << "node_" << addr << " [label=\"" << +n.variable() << "\"];" << std::endl
-            << "node_" << addr << " -> " << "node_" << succ
+        os_ << "node_" << id << " [label=\"" << +n.variable() << "\"];" << std::endl
+            << "node_" << id << " -> " << "node_" << succ
             << " [label=\"" << arc.valuation() << "\"];"
             << std::endl;
       }
-      visited_.emplace_hint(search, addr);
     }
-    return addr;
+    return insertion.first->second;
   }
-
-//  /// @brief Hierarchical SDD.
-//  result_type
-//  operator()(const hierarchical_node<C>&)
-//  const
-//  {
-//    std::cerr << "DOT export of hierarchical SDD not supported" << std::endl;
-//    return nullptr;
-//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/
@@ -108,7 +88,15 @@ struct to_dot
   operator<<(std::ostream& out, const to_dot& manip)
   {
     out << "digraph sdd {" << std::endl;
-    visit(to_dot_visitor<C>(out), manip.x_);
+    if (manip.x_.empty())
+    {
+      out << "node_0 [shape=square,label=\"0\"];" << std::endl;
+    }
+    else
+    {
+      out << "node_1 [shape=square,label=\"1\"];" << std::endl;
+      visit(to_dot_visitor<C>(out), manip.x_);
+    }
     return out << "}" << std::endl;
   }
 };
@@ -116,8 +104,6 @@ struct to_dot
 /*------------------------------------------------------------------------------------------------*/
 
 /// @brief Export an SDD to the DOT format.
-///
-/// Hierarchical SDD are not supported yet.
 template <typename C>
 to_dot<C>
 dot(const SDD<C>& x)

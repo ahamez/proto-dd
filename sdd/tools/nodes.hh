@@ -16,10 +16,11 @@ struct nb_nodes_visitor
   /// @brief Required by mem::variant visitor mechanism.
   using result_type = std::pair<unsigned int, unsigned int>;
 
+  /// @brief How to identify a node.
+  using node_id_type = typename proto_view<C>::id_type;
+
   /// @brief A cache is necessary to to know if a node has already been encountered.
-  ///
-  /// We use the addresses of nodes as key. It's legit because nodes are unified and immutable.
-  mutable std::unordered_set<const char*> visited_;
+  mutable std::unordered_set<node_id_type> visited_;
 
   /// @brief |0|.
   result_type
@@ -42,7 +43,7 @@ struct nb_nodes_visitor
   operator()(const flat_node<C>& n)
   const
   {
-    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
+    if (visited_.emplace(n.id()).second)
     {
       result_type res {1, 0};
       for (const auto& arc : n)
@@ -56,27 +57,6 @@ struct nb_nodes_visitor
       return std::make_pair(0, 0);
     }
   }
-
-//  /// @brief Hierarchical SDD.
-//  result_type
-//  operator()(const hierarchical_node<C>& n)
-//  const
-//  {
-//    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
-//    {
-//      result_type res {0, 1};
-//      for (const auto& arc : n)
-//      {
-//        accumulate_pair(res, visit(*this, arc.valuation()));
-//        accumulate_pair(res, visit(*this, arc.successor()));
-//      }
-//      return res;
-//    }
-//    else
-//    {
-//      return std::make_pair(0, 0);
-//    }
-//  }
 
 private:
 

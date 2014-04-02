@@ -19,6 +19,7 @@ struct count_combinations_visitor
   /// @brief Required by mem::variant visitor mechanism.
   using result_type = boost::multiprecision::cpp_int;
 
+  /// @brief How to identify a node.
   using node_id_type = typename proto_view<C>::id_type;
 
   /// @brief A cache is used to speed up the computation.

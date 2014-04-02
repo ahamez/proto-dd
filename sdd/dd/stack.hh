@@ -26,8 +26,8 @@ struct stack
   }
 
   template <typename Shift>
-  stack<T>&
-  shift(const stack<T>& rhs, Shift&& sh)
+  stack&
+  shift(const stack& rhs, Shift&& sh)
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());
@@ -37,8 +37,8 @@ struct stack
   }
 
   template <typename Rebuild>
-  stack<T>&
-  rebuild(const stack<T>& rhs, Rebuild&& rb)
+  stack&
+  rebuild(const stack& rhs, Rebuild&& rb)
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());

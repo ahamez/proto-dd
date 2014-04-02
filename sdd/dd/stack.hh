@@ -31,7 +31,7 @@ struct stack
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());
-    for (int i = 0; i != max_size; ++i)
+    for (std::size_t i = 0; i != max_size; ++i)
       this->elements[i] = sh(this->elements[i], rhs[i]);
     return canonize(*this);
   }
@@ -42,7 +42,7 @@ struct stack
   {
     std::size_t max_size = std::max(size(*this), size(rhs));
     this->elements.resize(max_size, default_value<T>::value());
-    for (int i = 0; i != max_size; ++i)
+    for (std::size_t i = 0; i != max_size; ++i)
       this->elements[i] = rb(this->elements[i], rhs[i]);
     return canonize(*this);
   }
@@ -76,7 +76,7 @@ pop (const stack<T>& s)
   {
     stack<T> result;
     result.elements.reserve(s.elements.size() - 1);
-    for (int i = 1; i != s.elements.size(); ++i)
+    for (std::size_t i = 1; i != s.elements.size(); ++i)
       result.elements.push_back(s.elements[i]);
     return result;
   }
@@ -135,7 +135,7 @@ common (const std::vector<std::reference_wrapper<const stack<T>>>& ss, Common&& 
   result.elements.reserve(max_size);
   std::vector<T> values;
   values.reserve(ss.size());
-  for (int i = 0; i != max_size; ++i)
+  for (std::size_t i = 0; i != max_size; ++i)
   {
     for (const auto& s : ss)
       values.push_back(s.get()[i]);

@@ -204,14 +204,10 @@ struct hash<sdd::dd::internal_proto_env<Value, Successor>>
   operator()(const sdd::dd::internal_proto_env<Value, Successor>& c)
   const
   {
-//    using value_type     = typename sdd::dd::internal_env<Value, Successor>::value_type;
-//    using successor_type = typename sdd::dd::internal_env<Value, Successor>::successor_type;
-//
-//    std::size_t seed = sdd::util::hash(c.level);
-//    sdd::util::hash_combine(seed, c.values);
-//    sdd::util::hash_combine(seed, c.successors);
-//    return seed;
-    return 0;
+    std::size_t seed = sdd::util::hash(c.level);
+    sdd::util::hash_combine(seed, c.values);
+    sdd::util::hash_combine(seed, c.successors);
+    return seed;
   }
 };
 

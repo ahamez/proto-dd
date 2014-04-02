@@ -9,7 +9,6 @@
 #include "sdd/dd/alpha.hh"
 #include "sdd/dd/count_combinations_fwd.hh"
 #include "sdd/dd/definition_fwd.hh"
-#include "sdd/dd/node.hh"
 #include "sdd/dd/path_generator_fwd.hh"
 #include "sdd/dd/proto_env.hh"
 #include "sdd/dd/proto_node.hh"
@@ -29,16 +28,11 @@ namespace sdd {
 
 /*------------------------------------------------------------------------------------------------*/
 
-/// @brief SDD at the deepest level.
-//template <typename C>
-//using flat_node = node<C, typename C::Values>;
+/// @brief An SDD node.
 template <typename C>
 using flat_node = proto_view<C>;
 
-///// @brief All but SDD at the deepest level.
-//template <typename C>
-//using hierarchical_node = node<C, SDD<C>>;
-
+// Forward declarations.
 template <typename C> SDD<C> zero() noexcept;
 template <typename C> SDD<C> one() noexcept;
 
@@ -69,10 +63,6 @@ public:
   /// @internal
   static constexpr std::size_t proto_node_index
     = data_type::template index_for_type<proto_node<C>>();
-
-//  /// @internal
-//  static constexpr std::size_t hierarchical_node_index
-//    = data_type::template index_for_type<hierarchical_node<C>>();
 
   /// @internal
   /// @brief A unified and canonized SDD, meant to be stored in a unique table.
@@ -136,7 +126,6 @@ public:
   /// O(1).
   SDD(variable_type var, values_type&& val, const SDD& succ)
     : env_(dd::empty_proto_env<C, SDD>())
-//    , ptr_(create_node(var, std::move(val), succ))
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, std::move(val), succ);
@@ -151,23 +140,10 @@ public:
   /// O(1).
   SDD(variable_type var, const values_type& val, const SDD& succ)
     : env_(dd::empty_proto_env<C, SDD>())
-//    , ptr_(create_node(var, val, succ))
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, val, succ);
   }
-
-//  /// @internal
-//  /// @brief Construct a hierarchical SDD.
-//  /// @param var  The SDD's variable.
-//  /// @param val  The SDD's valuation, an SDD in this case.
-//  /// @param succ The SDD's successor.
-//  ///
-//  /// O(1).
-//  SDD(variable_type var, const SDD& val, const SDD& succ)
-//    : env_(dd::empty_proto_env<C>())
-//    , ptr_(create_node(var, val, succ))
-//  {}
 
   /// @brief Construct an SDD with an order.
   template <typename Initializer>
@@ -184,13 +160,11 @@ public:
       // We can safely pass the order_identifier as a user one because only hierarchical levels
       // can be artificial.
       assert(not o.identifier().artificial());
-//      ptr_ = create_node(o.variable(), init(o.identifier().user()), SDD(o.next(), init));
       std::tie(env_, ptr_)
         = create_node(o.variable(), init(o.identifier().user()), SDD(o.next(), init));
     }
     else // hierarchical
     {
-//      ptr_ = create_node(o.variable(), SDD(o.nested(), init), SDD(o.next(), init));
       assert(false && "Hierarchy in order.");
     }
   }
@@ -228,16 +202,6 @@ public:
     std::swap(lhs.ptr_, rhs.ptr_);
   }
 
-//  /// @internal
-//  /// @brief Construct an SDD from a ptr.
-//  ///
-//  /// O(1).
-//  SDD(const ptr_type& ptr)
-//  noexcept
-//    : env_(dd::empty_proto_env<C>())
-//    , ptr_(ptr)
-//  {}
-
   /// @internal
   SDD(const ptr_type& ptr, const proto_env_type& env)
   noexcept
@@ -246,13 +210,8 @@ public:
   {}
 
   /// @internal
-  /// @brief  Construct an SDD, flat or hierarchical, with an alpha.
-  /// @tparam Valuation If an SDD, constructs a hierarchical SDD; if a set of values,
-  /// constructs a flat SDD.
+  /// @brief  Construct an SDD with an alpha.
   ///
-  /// O(n) where n is the number of arcs in the builder.
-//  template <typename Valuation>
-//  SDD(const variable_type& var, dd::alpha_builder<C, Valuation>&& builder)
   SDD(variable_type var, dd::alpha_builder<C, values_type>&& builder)
     : env_(dd::empty_proto_env<C, SDD>())
     , ptr_(zero_ptr())
@@ -356,35 +315,27 @@ private:
   /// @brief Helper function to create a node, flat or hierarchical, with only one arc.
   ///
   /// O(1).
-//  template <typename Valuation>
   static
-//  ptr_type
-//  create_node(variable_type var, Valuation&& val, const SDD& succ)
   tuple_type
   create_node(variable_type var, values_type&& val, const SDD& succ)
   {
     if (succ.empty() or values::empty_values(val))
     {
-//      return zero_ptr();
       return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
     }
     else
     {
       dd::alpha_builder<C, values_type> builder;
       builder.add(std::move(val), succ);
-//      return ptr_type(unify_node(var, std::move(builder)));
       return unify_proto(std::move(builder));
     }
   }
 
   /// @internal
-  /// @brief Helper function to create a node, flat or hierarchical, with only one arc.
+  /// @brief Helper function to create a node with only one arc.
   ///
   /// O(1).
-//  template <typename Valuation>
   static
-//  ptr_type
-//  create_node(variable_type var, const Valuation& val, const SDD& succ)
   tuple_type
   create_node(variable_type var, const values_type& val, const SDD& succ)
   {
@@ -396,19 +347,15 @@ private:
     {
       dd::alpha_builder<C, values_type> builder;
       builder.add(val, succ);
-//      return ptr_type(unify_node(var, std::move(builder)));
       return unify_proto(std::move(builder));
     }
   }
 
   /// @internal
-  /// @brief Helper function to create a node, flat or hierarchical, from an alpha.
+  /// @brief Helper function to create a node from an alpha.
   ///
   /// O(n) where n is the number of arcs in the builder.
-//  template <typename Valuation>
   static
-//  ptr_type
-//  create_node(variable_type var, dd::alpha_builder<C, Valuation>&& builder)
   tuple_type
   create_node(variable_type var, dd::alpha_builder<C, values_type>&& builder)
   {
@@ -418,7 +365,6 @@ private:
     }
     else
     {
-//      return ptr_type(unify_node(var, std::move(builder)));
       return unify_proto(std::move(builder));
     }
   }
@@ -618,27 +564,6 @@ check_compatibility(const SDD<C>& lhs, const SDD<C>& rhs)
     // different type of nodes
     throw top<C>(lhs, rhs);
   }
-
-//  typename SDD<C>::variable_type lhs_variable;
-//  typename SDD<C>::variable_type rhs_variable;
-
-//  // we must convert to the right type before comparing variables
-//  if (lhs_index == SDD<C>::proto_node_index)
-//  {
-//    lhs_variable = mem::variant_cast<proto_node<C>>(*lhs).variable();
-//    rhs_variable = mem::variant_cast<proto_node<C>>(*rhs).variable();
-//  }
-//  else
-//  {
-//    lhs_variable = mem::variant_cast<hierarchical_node<C>>(*lhs).variable();
-//    rhs_variable = mem::variant_cast<hierarchical_node<C>>(*rhs).variable();
-//  }
-
-//  if (lhs_variable != rhs_variable)
-//  {
-//    throw top<C>(lhs, rhs);
-//  }
-
 
   if (lhs_index == SDD<C>::proto_node_index)
   {

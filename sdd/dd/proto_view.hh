@@ -6,7 +6,6 @@
 #include "sdd/dd/alpha.hh"
 #include "sdd/dd/definition.hh"
 #include "sdd/dd/proto_env.hh"
-//#include "sdd/dd/node.hh"
 #include "sdd/dd/proto_node.hh"
 
 namespace sdd {

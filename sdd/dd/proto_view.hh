@@ -16,13 +16,9 @@ namespace sdd {
 template <typename C>
 class proto_view final
 {
-//  // Can't copy a proto_view.
-//  proto_view& operator=(const proto_view&) = delete;
-//  proto_view(const proto_view&) = delete;
-//
-//  // Can't move a proto_view.
-//  proto_view& operator=(proto_view&&) = delete;
-//  proto_view(proto_view&&) = delete;
+  // Can't copy a proto_view.
+  proto_view& operator=(const proto_view&) = delete;
+  proto_view(const proto_view&) = delete;
 
 public:
 
@@ -56,6 +52,10 @@ public:
   noexcept
     : env_(env), arcs_(mk_arcs(env, node))
   {}
+
+  // Move a proto_view.
+  proto_view& operator=(proto_view&&) = default;
+  proto_view(proto_view&&) = default;
 
   /// @brief Get the variable of this node.
   ///

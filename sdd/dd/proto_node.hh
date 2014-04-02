@@ -171,8 +171,7 @@ struct hash<sdd::proto_arc<C>>
 {
   std::size_t
   operator()(const sdd::proto_arc<C>& n)
-//  const noexcept(noexcept(sdd::util::hash(n.begin(), n.end())))
-  const
+  const noexcept /*(noexcept(???))*/
   {
     std::size_t seed = sdd::util::hash(n.current_values);
     sdd::util::hash_combine(seed, n.values);

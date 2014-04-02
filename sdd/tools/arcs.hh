@@ -12,9 +12,9 @@ namespace sdd { namespace tools {
 /*------------------------------------------------------------------------------------------------*/
 
 using arcs_frequency_type
-  = std::unordered_map< unsigned int /*number of arcs*/
-                      , std::pair< unsigned int /* flat arcs frequency */
-                                 , unsigned int /* hierarchical arcs frequency */>>;
+  = std::unordered_map< std::size_t /*number of arcs*/
+                      , std::pair< std::size_t /* flat arcs frequency */
+                                 , std::size_t /* hierarchical arcs frequency */>>;
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -25,10 +25,11 @@ struct arcs_visitor
   /// @brief Required by mem::variant visitor mechanism.
   using result_type = void;
 
+  /// @brief How to identify a node.
+  using node_id_type = typename proto_view<C>::id_type;
+
   /// @brief A cache is necessary to to know if a node has already been encountered.
-  ///
-  /// We use the addresses of nodes as key. It's legit because nodes are unified and immutable.
-  mutable std::unordered_set<const char*> visited_;
+  mutable std::unordered_set<node_id_type> visited_;
 
   /// @brief Stores the frequency of apparition of a number of arcs.
   mutable arcs_frequency_type map_;
@@ -50,7 +51,7 @@ struct arcs_visitor
   operator()(const flat_node<C>& n)
   const
   {
-    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
+    if (visited_.emplace(n.id()).second)
     {
       map_[n.size()].first += 1;
       for (const auto& arc : n)
@@ -59,22 +60,6 @@ struct arcs_visitor
       }
     }
   }
-
-//  /// @brief Hierarchical SDD.
-//  result_type
-//  operator()(const hierarchical_node<C>& n)
-//  const
-//  {
-//    if (visited_.emplace(reinterpret_cast<const char*>(&n)).second)
-//    {
-//      map_[n.size()].second += 1;
-//      for (const auto& arc : n)
-//      {
-//        visit(*this, arc.valuation());
-//        visit(*this, arc.successor());
-//      }
-//    }
-//  }
 };
 
 /*------------------------------------------------------------------------------------------------*/

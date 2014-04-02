@@ -53,7 +53,8 @@ public:
   using value_type = typename values_type::value_type;
 
   using env_type = dd::proto_env<C, SDD<C>>;
-  using arcs_type = std::vector<arc<C, values_type>>;
+  using arc_type = arc<C, values_type>;
+  using arcs_type = std::vector<arc_type>;
 
   /// @brief The type of the variable of this node.
   using variable_type = typename C::variable_type;

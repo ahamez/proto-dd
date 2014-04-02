@@ -390,7 +390,7 @@ private:
   {
     if (succ.empty() or values::empty_values(val))
     {
-      return std::make_tuple(dd::empty_proto_env<C>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
     }
     else
     {

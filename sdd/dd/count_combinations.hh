@@ -20,7 +20,7 @@ struct count_combinations_visitor
   using result_type = boost::multiprecision::cpp_int;
 
   /// @brief How to identify a node.
-  using node_id_type = typename proto_view<C>::id_type;
+  using node_id_type = typename flat_node<C>::id_type;
 
   /// @brief A cache is used to speed up the computation.
   mutable std::unordered_map<node_id_type, result_type> cache_;

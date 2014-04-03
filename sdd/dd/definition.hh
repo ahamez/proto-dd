@@ -30,7 +30,7 @@ namespace sdd {
 
 /// @brief An SDD node.
 template <typename C>
-using flat_node = proto_view<C>;
+using flat_node = proto_view<C, SDD<C>>;
 
 // Forward declarations.
 template <typename C> SDD<C> zero() noexcept;
@@ -301,12 +301,12 @@ public:
   }
 
   /// @internal
-  proto_view<C>
+  proto_view<C, SDD>
   view()
   const
   {
     assert(index() == proto_node_index && "Attempt to convert a non-proto_node");
-    return proto_view<C>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
+    return proto_view<C, SDD>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
   }
 
 private:

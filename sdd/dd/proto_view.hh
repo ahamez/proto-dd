@@ -14,10 +14,10 @@ namespace sdd {
 
 /// @internal
 /// @brief Help identify a proto_view.
-template <typename C>
+template <typename C, typename Successor>
 struct proto_view_identity
 {
-  using env_type = dd::proto_env<C, SDD<C>>;
+  using env_type = dd::proto_env<C, Successor>;
 
   const char* env;
 //  const env_type& env;
@@ -41,7 +41,7 @@ struct proto_view_identity
 /*------------------------------------------------------------------------------------------------*/
 
 /// @internal
-template <typename C>
+template <typename C, typename Successor>
 class proto_view final
 {
   // Can't copy a proto_view.
@@ -54,7 +54,7 @@ public:
   using valuation_type = values_type;
   using value_type = typename values_type::value_type;
 
-  using env_type = dd::proto_env<C, SDD<C>>;
+  using env_type = dd::proto_env<C, Successor>;
   using arc_type = arc<C, values_type>;
   using arcs_type = std::vector<arc_type>;
 
@@ -64,7 +64,7 @@ public:
   /// @brief A (const) iterator on the arcs of this node.
   using const_iterator = typename arcs_type::const_iterator;
 
-  using id_type = proto_view_identity<C>;
+  using id_type = proto_view_identity<C, Successor>;
 
 private:
 
@@ -136,7 +136,7 @@ public:
   id()
   const noexcept
   {
-    return proto_view_identity<C>(env_, node_);
+    return proto_view_identity<C, Successor>(env_, node_);
   }
 
 private:
@@ -165,10 +165,12 @@ private:
       values_stack.rebuild(env.values_stack(), C::rebuild);
 
       auto succs_stack = proto_arc.successors;
-      succs_stack.rebuild(env.successors_stack(), [](const SDD<C>& lhs, const SDD<C>& rhs)
-                                                    {
-                                                      return rhs == zero<C>() ? lhs : rhs;
-                                                    });
+      succs_stack.rebuild( env.successors_stack()
+                         , [](const Successor& lhs, const Successor& rhs)
+                             {
+//                               return rhs == zero<C>() ? lhs : rhs;
+                               return rhs == dd::default_value<Successor>::value() ? lhs : rhs;
+                             });
 
       // Get the values of the current level.
       const auto k = head(values_stack);
@@ -196,7 +198,7 @@ private:
 
 template <typename C, typename Successor>
 inline
-proto_view<C>
+proto_view<C, Successor>
 view(const proto_node<C>& n, const dd::proto_env<C, Successor>& env)
 {
   return {env, n};
@@ -206,9 +208,9 @@ view(const proto_node<C>& n, const dd::proto_env<C, Successor>& env)
 
 /// @brief   Export a proto_view to a stream.
 /// @related proto_view
-template <typename C>
+template <typename C, typename Successor>
 std::ostream&
-operator<<(std::ostream& os, const proto_view<C>& n)
+operator<<(std::ostream& os, const proto_view<C, Successor>& n)
 {
   return os << "proto_view TODO";
 //  // +n.variable(): widen the type. It's useful to print the values of char and unsigned char types.
@@ -228,11 +230,11 @@ namespace std {
 /*------------------------------------------------------------------------------------------------*/
 
 /// @brief Hash specialization for sdd::proto_view_identity
-template <typename C>
-struct hash<sdd::proto_view_identity<C>>
+template <typename C, typename Successor>
+struct hash<sdd::proto_view_identity<C, Successor>>
 {
   std::size_t
-  operator()(const sdd::proto_view_identity<C>& id)
+  operator()(const sdd::proto_view_identity<C, Successor>& id)
   const noexcept
   {
     std::size_t seed = sdd::util::hash(id.env);

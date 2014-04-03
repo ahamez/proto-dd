@@ -17,7 +17,7 @@ struct to_dot_visitor
   using result_type = unsigned int;
 
   /// @brief How to identify a node.
-  using node_id_type = typename proto_view<C>::id_type;
+  using node_id_type = typename flat_node<C>::id_type;
 
   /// @brief A cache is necessary to to know if a node has already been encountered.
   mutable std::unordered_map<node_id_type, unsigned int> cache_;

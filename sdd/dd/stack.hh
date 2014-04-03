@@ -148,7 +148,7 @@ common (const std::vector<std::reference_wrapper<const stack<T>>>& ss, Common&& 
 /*------------------------------------------------------------------------------------------------*/
 
 /// @internal
-/// @brief   Equality of two stack.
+/// @brief Equality of two stack.
 /// @related stack
 template <typename T>
 inline
@@ -157,6 +157,18 @@ operator==(const stack<T>& lhs, const stack<T>& rhs)
 noexcept
 {
   return lhs.elements == rhs.elements;
+}
+
+/// @internal
+/// @brief Comparison of two stack.
+/// @related stack
+template <typename T>
+inline
+bool
+operator<(const stack<T>& lhs, const stack<T>& rhs)
+noexcept
+{
+  return lhs.elements < rhs.elements;
 }
 
 /*------------------------------------------------------------------------------------------------*/

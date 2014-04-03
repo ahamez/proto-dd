@@ -449,7 +449,7 @@ private:
 
     // Finally, we can create and unify the proto_dd.
     auto& ut = global<C>().sdd_unique_table;
-    char* addr = ut.allocate(sizeof(proto_node<C>));
+    char* addr = ut.allocate(0 /* extra bytes */);
     unique_type* u =
       new (addr) unique_type(mem::construct<proto_node<C>>(), std::move(arcs));
     return std::make_tuple( proto_env_type( new_level

@@ -455,8 +455,9 @@ private:
       = dd::common( arcs_succs_stacks
                   , [](sdd_cit begin, sdd_cit end)
                       {
-                        return std::all_of(begin, end, [&](const ptr_type& x){return x == *begin;})
-                             ? *begin
+                        const auto head = begin;
+                        return std::all_of(begin, end, [&](const ptr_type& x){return x == *head;})
+                             ? *head
                              : zero_ptr();
                       });
 

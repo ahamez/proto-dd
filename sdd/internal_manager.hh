@@ -122,15 +122,12 @@ private:
   proto_env_ptr_type
   mk_empty_proto_env()
   {
-//    char* addr = proto_unique_table.allocate(0 /*extra bytes*/);
-//    auto* u = new (addr) proto_unique_type();
-//    auto* tmp = &proto_unique_table(u);
-//    std::cout << "A" << std::endl;
-//    return proto_ptr_type(*tmp);
-//    return proto_ptr_type(proto_unique_table(u));
     char* addr = proto_env_unique_table.allocate(0 /*extra bytes*/);
     proto_env_unique_type* u = new (addr) proto_env_unique_type();
-    return proto_env_ptr_type(proto_env_unique_table(u));
+//    return proto_env_ptr_type(proto_env_unique_table(u));
+    const auto res = proto_env_ptr_type(proto_env_unique_table(u));
+    std::cout << "empty env " << &res->data() << std::endl;
+    return res;
   }
 
   /// @brief Helper to construct terminals.

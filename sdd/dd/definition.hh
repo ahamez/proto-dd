@@ -443,7 +443,7 @@ private:
       proto_arc.values.shift(env_value_stack, C::shift);
       proto_arc.successors.shift(env_succs_stack, [](const SDD<C>& lhs, const SDD<C>& rhs)
                                                     {
-                                                      return rhs == zero<C>() ? lhs : rhs;
+                                                      return rhs == zero<C>() ? lhs : zero<C>();
                                                     });
     }
 

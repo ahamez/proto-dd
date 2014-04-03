@@ -11,7 +11,7 @@
 #include "sdd/dd/definition_fwd.hh"
 #include "sdd/dd/path_generator_fwd.hh"
 #include "sdd/dd/proto_env.hh"
-#include "sdd/dd/proto_node.hh"
+#include "sdd/dd/proto_node_fwd.hh"
 #include "sdd/dd/proto_view_fwd.hh"
 #include "sdd/dd/terminal.hh"
 #include "sdd/dd/top.hh"
@@ -28,9 +28,34 @@ namespace sdd {
 
 /*------------------------------------------------------------------------------------------------*/
 
+/// @internal
+template <typename C>
+using sdd_data_type = mem::variant<zero_terminal<C>, one_terminal<C>, proto_node<C>>;
+
+/// @internal
+template <typename C>
+using sdd_unique_type = mem::ref_counted<sdd_data_type<C>>;
+
+/// @internal
+template <typename C>
+using sdd_ptr_type =  mem::ptr<sdd_unique_type<C>>;
+
+/*------------------------------------------------------------------------------------------------*/
+
+namespace dd {
+template <typename C>
+struct default_value<sdd_ptr_type<C>>
+{
+  static sdd_ptr_type<C> value() {return SDD<C>::zero_ptr();}
+};
+
+}
+
+/*------------------------------------------------------------------------------------------------*/
+
 /// @brief An SDD node.
 template <typename C>
-using flat_node = proto_view<C, SDD<C>>;
+using flat_node = proto_view<C, sdd_ptr_type<C>>;
 
 // Forward declarations.
 template <typename C> SDD<C> zero() noexcept;
@@ -48,9 +73,22 @@ private:
   ///
   /// This is the real recursive definition of an SDD: it can be a |0| or |1| terminal, or it
   /// can be a flat or an hierachical node.
-  typedef mem::variant<zero_terminal<C>, one_terminal<C>, proto_node<C>> data_type;
+  using data_type = sdd_data_type<C>;
 
 public:
+
+  /// @internal
+  /// @brief A unified and canonized SDD, meant to be stored in a unique table.
+  ///
+  /// It is automatically erased when there is no more reference to it.
+  using unique_type = sdd_unique_type<C>;
+
+  /// @internal
+  /// @brief The type of the smart pointer around a unified SDD.
+  ///
+  /// It handles the reference counting as well as the deletion of the SDD when it is no longer
+  /// referenced.
+  using ptr_type = sdd_ptr_type<C>;
 
   /// @internal
   static constexpr std::size_t zero_terminal_index
@@ -65,21 +103,8 @@ public:
     = data_type::template index_for_type<proto_node<C>>();
 
   /// @internal
-  /// @brief A unified and canonized SDD, meant to be stored in a unique table.
-  ///
-  /// It is automatically erased when there is no more reference to it.
-  using unique_type = mem::ref_counted<data_type>;
-
-  /// @internal
-  /// @brief The type of the smart pointer around a unified SDD.
-  ///
-  /// It handles the reference counting as well as the deletion of the SDD when it is no longer
-  /// referenced.
-  using ptr_type = mem::ptr<unique_type>;
-
-  /// @internal
   /// @brief The type of the environment used to reconstruct a flat SDD.
-  using proto_env_type = dd::proto_env<C, SDD>;
+  using proto_env_type = dd::proto_env<C, ptr_type>;
 
   /// @brief The type of variables.
   using variable_type = typename C::variable_type;
@@ -102,7 +127,7 @@ public:
 
   /// @brief Default constructor.
   SDD()
-    : env_(dd::empty_proto_env<C, SDD>())
+    : env_(dd::empty_proto_env<C, ptr_type>())
     , ptr_(zero_ptr())
   {}
 
@@ -125,7 +150,7 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, values_type&& val, const SDD& succ)
-    : env_(dd::empty_proto_env<C, SDD>())
+    : env_(dd::empty_proto_env<C, ptr_type>())
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, std::move(val), succ);
@@ -139,7 +164,7 @@ public:
   ///
   /// O(1).
   SDD(variable_type var, const values_type& val, const SDD& succ)
-    : env_(dd::empty_proto_env<C, SDD>())
+    : env_(dd::empty_proto_env<C, ptr_type>())
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, val, succ);
@@ -148,7 +173,7 @@ public:
   /// @brief Construct an SDD with an order.
   template <typename Initializer>
   SDD(const order<C>& o, const Initializer& init)
-    : env_(dd::empty_proto_env<C, SDD>())
+    : env_(dd::empty_proto_env<C, ptr_type>())
     , ptr_(one_ptr())
   {
     if (o.empty()) // base case of the recursion, ptr_ is defaulted to |1|
@@ -213,7 +238,7 @@ public:
   /// @brief  Construct an SDD with an alpha.
   ///
   SDD(variable_type var, dd::alpha_builder<C, values_type>&& builder)
-    : env_(dd::empty_proto_env<C, SDD>())
+    : env_(dd::empty_proto_env<C, ptr_type>())
     , ptr_(zero_ptr())
   {
     std::tie(env_, ptr_) = create_node(var, std::move(builder));
@@ -301,12 +326,12 @@ public:
   }
 
   /// @internal
-  proto_view<C, SDD>
+  proto_view<C, ptr_type>
   view()
   const
   {
     assert(index() == proto_node_index && "Attempt to convert a non-proto_node");
-    return proto_view<C, SDD>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
+    return proto_view<C, ptr_type>(env_, mem::variant_cast<proto_node<C>>(ptr_->data()));
   }
 
 private:
@@ -321,7 +346,7 @@ private:
   {
     if (succ.empty() or values::empty_values(val))
     {
-      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, ptr_type>(), zero_ptr());
     }
     else
     {
@@ -341,7 +366,7 @@ private:
   {
     if (succ.empty() or values::empty_values(val))
     {
-      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, ptr_type>(), zero_ptr());
     }
     else
     {
@@ -361,7 +386,7 @@ private:
   {
     if (builder.empty())
     {
-      return std::make_tuple(dd::empty_proto_env<C, SDD>(), zero_ptr());
+      return std::make_tuple(dd::empty_proto_env<C, ptr_type>(), zero_ptr());
     }
     else
     {
@@ -412,9 +437,7 @@ private:
       arcs.emplace_back( values_type(std::move(values_builder))
                        , push(sdd_values.first.env().values_stack(), k)
                        , push( sdd_values.first.env().successors_stack()
-//                             , sdd_values.first
-                             , SDD<C>( sdd_values.first.ptr()
-                                     , proto_env_type::empty_ptr())
+                             , sdd_values.first.ptr()
                              ));
 
       // Get a reference to this arc's stacks.
@@ -427,30 +450,23 @@ private:
       = dd::common( arcs_values_stacks
                   , C::template common<std::vector<unsigned int>::const_iterator>);
 
-    using sdd_cit = typename std::vector<SDD<C>>::const_iterator;
+    using sdd_cit = typename std::vector<ptr_type>::const_iterator;
     successor_stack_type env_succs_stack
       = dd::common( arcs_succs_stacks
                   , [](sdd_cit begin, sdd_cit end)
                       {
-                        return std::all_of(begin, end, [&](const SDD<C>& x){return x == *begin;})
+                        return std::all_of(begin, end, [&](const ptr_type& x){return x == *begin;})
                              ? *begin
-                             : zero<C>();
+                             : zero_ptr();
                       });
-
-//    std::sort( arcs.begin(), arcs.end()
-//             , [](const proto_arc<C>& lhs, const proto_arc<C>& rhs)
-//                 {return lhs.successors.elements[0] < rhs.successors.elements[0];});
-
-//    std::sort(arcs.begin(), arcs.end());
-
 
     // Shift stacks on proto arcs with the new environments' stacks
     for (auto& proto_arc : arcs)
     {
       proto_arc.values.shift(env_value_stack, C::shift);
-      proto_arc.successors.shift(env_succs_stack, [](const SDD<C>& lhs, const SDD<C>& rhs)
+      proto_arc.successors.shift(env_succs_stack, [](const ptr_type& lhs, const ptr_type& rhs)
                                                     {
-                                                      return rhs == zero<C>() ? lhs : zero<C>();
+                                                      return rhs == zero_ptr() ? lhs : zero_ptr();
                                                     });
     }
 
@@ -542,7 +558,7 @@ SDD<C>
 zero()
 noexcept
 {
-  return {SDD<C>::zero_ptr(), dd::empty_proto_env<C, SDD<C>>()};
+  return {SDD<C>::zero_ptr(), dd::empty_proto_env<C, sdd_ptr_type<C>>()};
 }
 
 /// @brief Return the |1| terminal.
@@ -555,7 +571,7 @@ SDD<C>
 one()
 noexcept
 {
-  return {SDD<C>::one_ptr(), dd::empty_proto_env<C, SDD<C>>()};
+  return {SDD<C>::one_ptr(), dd::empty_proto_env<C, sdd_ptr_type<C>>()};
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -614,6 +630,7 @@ struct hash<sdd::SDD<C>>
 
 #include "sdd/dd/count_combinations.hh"
 #include "sdd/dd/path_generator.hh"
+#include "sdd/dd/proto_node.hh"
 #include "sdd/dd/proto_view.hh"
 
 #endif // _SDD_DD_DEFINITION_HH_

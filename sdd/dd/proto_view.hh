@@ -168,7 +168,6 @@ private:
       succs_stack.rebuild( env.successors_stack()
                          , [](const Successor& lhs, const Successor& rhs)
                              {
-//                               return rhs == zero<C>() ? lhs : rhs;
                                return rhs == dd::default_value<Successor>::value() ? lhs : rhs;
                              });
 
@@ -183,9 +182,9 @@ private:
 
       // The current arc is complete.
       arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
-                       , SDD<C>(succ.ptr(), env_type( env.level() - 1
-                                                    , std::move(pop(values_stack))
-                                                    , std::move(pop(succs_stack)))));
+                       , SDD<C>(succ, env_type( env.level() - 1
+                                              , std::move(pop(values_stack))
+                                              , std::move(pop(succs_stack)))));
 
       // Will be re-used on next iteration.
       values_buffer.clear();

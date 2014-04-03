@@ -156,7 +156,7 @@ private:
     std::cout << "  succs stack : [";
     for (const auto& x : s.elements)
     {
-      std::cout << "(env=" << &*x.env() << ", node=" << &*x.ptr() << "), ";
+      std::cout << &*x << ", ";
     }
     std::cout << "]\n";
     auto& ut = global<C>().proto_env_unique_table;
@@ -175,7 +175,7 @@ inline
 proto_env<C, Successor>
 empty_proto_env()
 {
-  return proto_env<C, Successor>(proto_env<C, Successor>::empty_ptr());
+  return proto_env<C, Successor>::empty_ptr();
 }
 
 /*------------------------------------------------------------------------------------------------*/

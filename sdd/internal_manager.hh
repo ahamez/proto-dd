@@ -31,16 +31,13 @@ struct internal_manager
   internal_manager& operator=(const internal_manager&&) = delete;
 
   /// @brief The type of a unified proto environment.
-  using proto_env_unique_type = typename dd::proto_env<C, SDD<C>>::unique_type;
+  using proto_env_unique_type = typename dd::proto_env<C, sdd_ptr_type<C>>::unique_type;
 
   /// @brief The type of a smart pointer to a unified proto environment.
-  using proto_env_ptr_type = typename dd::proto_env<C, SDD<C>>::ptr_type;
+  using proto_env_ptr_type = typename dd::proto_env<C, sdd_ptr_type<C>>::ptr_type;
 
   /// @brief The type of a unified SDD.
   using sdd_unique_type = typename SDD<C>::unique_type;
-
-  /// @brief The type of a smart pointer to a unified SDD.
-  using sdd_ptr_type = typename SDD<C>::ptr_type;
 
   /// @brief The type of a unified homomorphism.
   using hom_unique_type = typename homomorphism<C>::unique_type;
@@ -88,10 +85,10 @@ struct internal_manager
   const proto_env_ptr_type empty_proto_env;
 
   /// @brief The cached |0| terminal.
-  const sdd_ptr_type zero;
+  const sdd_ptr_type<C> zero;
 
   /// @brief The cached |1| terminal.
-  const sdd_ptr_type one;
+  const sdd_ptr_type<C> one;
 
   /// @brief The cached Id homomorphism.
   const hom_ptr_type id;
@@ -124,20 +121,17 @@ private:
   {
     char* addr = proto_env_unique_table.allocate(0 /*extra bytes*/);
     proto_env_unique_type* u = new (addr) proto_env_unique_type();
-//    return proto_env_ptr_type(proto_env_unique_table(u));
-    const auto res = proto_env_ptr_type(proto_env_unique_table(u));
-    std::cout << "empty env " << &res->data() << std::endl;
-    return res;
+    return proto_env_ptr_type(proto_env_unique_table(u));
   }
 
   /// @brief Helper to construct terminals.
   template <typename T>
-  sdd_ptr_type
+  sdd_ptr_type<C>
   mk_terminal()
   {
     char* addr = sdd_unique_table.allocate(0 /*extra bytes*/);
     sdd_unique_type* u = new (addr) sdd_unique_type(mem::construct<T>());
-    return sdd_ptr_type(sdd_unique_table(u));
+    return sdd_ptr_type<C>(sdd_unique_table(u));
   }
 
   /// @brief Helper to construct Id.

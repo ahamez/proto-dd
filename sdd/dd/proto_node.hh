@@ -21,7 +21,7 @@ struct proto_arc
   using value_type = typename values_type::value_type;
 
   using value_stack_type     = dd::stack<value_type>;
-  using successor_stack_type = dd::stack<SDD<C>>;
+  using successor_stack_type = dd::stack<sdd_ptr_type<C>>;
 
   values_type current_values;
   value_stack_type values;
@@ -179,7 +179,7 @@ operator<<(std::ostream& os, const proto_node<C>& n)
   {
     for (const auto& successor : arc.successors.elements)
     {
-      os << successor;
+      os << successor->data();
     }
   }
   return os << std::endl;

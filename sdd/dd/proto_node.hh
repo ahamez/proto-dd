@@ -47,6 +47,31 @@ noexcept
      and lhs.successors == rhs.successors;
 }
 
+template <typename C>
+inline
+bool
+operator<(const proto_arc<C>& lhs, const proto_arc<C>& rhs)
+noexcept
+{
+  if (lhs.current_values < rhs.current_values)
+  {
+    return true;
+  }
+  else if (lhs.current_values == rhs.current_values)
+  {
+    if (lhs.values < rhs.values)
+    {
+      return true;
+    }
+    else if (lhs.values == rhs.values)
+    {
+      return lhs.successors < rhs.successors;
+    }
+    return false;
+  }
+  return false;
+}
+
 /*------------------------------------------------------------------------------------------------*/
 
 /// @brief  A non-terminal node in an SDD.

@@ -437,6 +437,13 @@ private:
                              : zero<C>();
                       });
 
+//    std::sort( arcs.begin(), arcs.end()
+//             , [](const proto_arc<C>& lhs, const proto_arc<C>& rhs)
+//                 {return lhs.successors.elements[0] < rhs.successors.elements[0];});
+
+//    std::sort(arcs.begin(), arcs.end());
+
+
     // Shift stacks on proto arcs with the new environments' stacks
     for (auto& proto_arc : arcs)
     {
@@ -446,6 +453,7 @@ private:
                                                       return rhs == zero<C>() ? lhs : zero<C>();
                                                     });
     }
+
 
     // Finally, we can create and unify the proto_dd.
     auto& ut = global<C>().sdd_unique_table;

@@ -1,247 +1,45 @@
-#include <chrono>
 #include <iostream>
-#include <set>
+#include <fstream>
 
 #include "sdd/sdd.hh"
-
-/*------------------------------------------------------------------------------------------------*/
+#include "sdd/tools/dot/sdd.hh"
+#include "sdd/tools/nodes.hh"
 
 using conf   = sdd::conf2;
 using SDD    = sdd::SDD<conf>;
-using hom    = sdd::homomorphism<conf>;
-using Values = conf::Values;
-
-using sdd::cons;
-using sdd::constant;
-using sdd::fixpoint;
-using sdd::id;
-using sdd::inductive;
-using sdd::sum;
-
-/*------------------------------------------------------------------------------------------------*/
-
-struct no_ring_above
-{
-  const unsigned int i;
-  const unsigned int j;
-
-  no_ring_above(int _i, int _j)
-    : i(_i<_j?_i:_j)
-    , j(_i<_j?_j:_i)
-  {}
-
-  bool
-  skip(unsigned char var)
-  const noexcept
-  {
-    return false;
-  }
-
-  hom
-  operator()(const sdd::order<conf>&, const SDD&)
-  const noexcept
-  {
-    // no hierarchy
-    assert(false);
-    __builtin_unreachable();
-  }
-
-  hom
-  operator()(const sdd::order<conf>& o, const Values& val)
-  const
-  {
-    Values v(val);
-    v.erase_keys(i, j);
-    return cons<conf>(o, std::move(v), inductive<conf>(*this));
-  }
-
-  SDD
-  operator()()
-  const noexcept
-  {
-    return sdd::one<conf>();
-  }
-
-  bool
-  operator==(const no_ring_above& other)
-  const noexcept
-  {
-    return i == other.i and j == other.j;
-  }
-};
-
-std::ostream&
-operator<<(std::ostream& os, const no_ring_above& x)
-{
-  return os << "nra(" << x.i << "," << x.j << ")";
-}
-
-/*------------------------------------------------------------------------------------------------*/
-
-struct swap_pole
-{
-
-  const unsigned int ring;
-  const unsigned int source;
-  const unsigned int destination;
-
-  swap_pole(int ring, int source, int destination)
-    : ring(ring)
-    , source(source)
-    , destination(destination)
-  {}
-
-  bool
-  skip(unsigned int var)
-  const noexcept
-  {
-    return var != ring;
-  }
-
-  hom
-  operator()(const sdd::order<conf>&, const SDD&)
-  const noexcept
-  {
-    // no hierarchy
-    assert(false);
-    __builtin_unreachable();
-  }
-
-  hom
-  operator()(const sdd::order<conf>& o, const Values& val)
-  const
-  {
-    if (val.find(source) == val.cend())
-    {
-      return constant<conf>(sdd::zero<conf>());
-    }
-    else
-    {
-      return cons<conf>( o
-                       , Values {destination}
-                       , inductive<conf>(no_ring_above(source,destination)));
-    }
-  }
-
-  SDD
-  operator()()
-  const noexcept
-  {
-    return sdd::one<conf>();
-  }
-
-  bool
-  operator==(const swap_pole& other)
-  const noexcept
-  {
-    return ring == other.ring and source == other.source and destination == other.destination;
-  }
-};
-
-std::ostream&
-operator<<(std::ostream& os, const swap_pole& x)
-{
-  return os << "swap_pole(" << x.ring << "," << x.source << "," << x.destination << ")";
-}
-
-/*------------------------------------------------------------------------------------------------*/
-
-namespace std {
-
-template <>
-struct hash<no_ring_above>
-{
-  std::size_t
-  operator()(const no_ring_above& x)
-  const noexcept
-  {
-    std::size_t seed = 0;
-    sdd::util::hash_combine(seed, x.i);
-    sdd::util::hash_combine(seed, x.j);
-    return seed;
-  }
-};
-
-template <>
-struct hash<swap_pole>
-{
-  std::size_t
-  operator()(const swap_pole& x)
-  const noexcept
-  {
-    std::size_t seed = 0;
-    sdd::util::hash_combine(seed, x.ring);
-    sdd::util::hash_combine(seed, x.source);
-    sdd::util::hash_combine(seed, x.destination);
-    return seed;
-  }
-};
-
-} // namespace std
-
-/*------------------------------------------------------------------------------------------------*/
 
 int
 main(int argc, char** argv)
 {
   auto manager = sdd::manager<conf>::init();
 
-  // The default number of rings
-  unsigned int nb_rings = 5;
-  if (argc >= 2)
   {
-    nb_rings = atoi(argv[1]);
-  }
+    const auto x0 = SDD(0, {0}, sdd::one<conf>());
+    const auto y0 = SDD(2, {0}, SDD(1, {0}, x0));
+    const auto z0 = SDD(2, {1}, SDD(1, {1}, x0));
 
-  // The default number of poles
-  unsigned int nb_poles = 3;
-  if (argc >= 3)
+    std::ofstream filex("/Users/hal/Desktop/x0.dot");
+    filex << sdd::tools::dot(x0);
+    std::ofstream filey("/Users/hal/Desktop/y0.dot");
+    filey << sdd::tools::dot(y0);
+    std::ofstream filez("/Users/hal/Desktop/z0.dot");
+    filez << sdd::tools::dot(z0);
+
+    std::ofstream file("/Users/hal/Desktop/x0_y0_z0.dot");
+    file << sdd::tools::dot(z0 + y0);
+  }
   {
-    nb_poles = atoi(argv[2]);
+    const auto y1 = SDD(2, {0}, SDD(1, {0}, SDD(0, {0}, sdd::one<conf>())));
+    const auto z1 = SDD(2, {1}, SDD(1, {1}, SDD(0, {0}, sdd::one<conf>())));
+
+    std::ofstream filey("/Users/hal/Desktop/y1.dot");
+    filey << sdd::tools::dot(y1);
+    std::ofstream filez("/Users/hal/Desktop/z1.dot");
+    filez << sdd::tools::dot(z1);
+
+    std::ofstream filea("/Users/hal/Desktop/y1_z1.dot");
+    filea << sdd::tools::dot(y1 + z1);
   }
-
-  /// Order
-  sdd::order_builder<conf> ob;
-  for (unsigned int i = 0; i < nb_rings; ++i)
-  {
-    ob.push(i);
-  }
-  sdd::order<conf> o(ob);
-
-  /// Initial state
-  SDD m0(o, [](unsigned int){return Values {0};});
-
-  /// Events
-  std::set<hom> union_swap_pole;
-  for (unsigned int i = 0; i < nb_rings; ++i)
-  {
-    for (unsigned int source = 0; source < nb_poles; ++source)
-    {
-      for (unsigned int destination = 0; destination < nb_poles; ++destination)
-      {
-        if (source != destination)
-        {
-          union_swap_pole.insert(inductive<conf>(swap_pole(i, source, destination)));
-        }
-      }
-    }
-  }
-
-  union_swap_pole.insert(id<conf>());
-  hom events = fixpoint(sum(o, union_swap_pole.begin(), union_swap_pole.end()));
-  events = sdd::rewrite(o, events);
-
-  std::chrono::time_point<std::chrono::system_clock> start, end;
-  std::size_t elapsed;
-
-  // Apply saturated events
-  start = std::chrono::system_clock::now();
-  SDD sat_final = events(o, m0);
-  end = std::chrono::system_clock::now();
-  elapsed = std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
-  std::cout << "Time: " << elapsed << "s" << std::endl;
-  // Number of distinct paths
-  std::cout << "Number of states : " << sat_final.size() << std::endl;
 
   return 0;
 }

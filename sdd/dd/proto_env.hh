@@ -177,7 +177,7 @@ operator==(const proto_env<C, Successor>& lhs, const proto_env<C, Successor>& rh
 }
 
 /// @internal
-/// @related env
+/// @related proto_env
 template <typename C, typename Successor>
 inline
 bool

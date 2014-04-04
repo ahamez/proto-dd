@@ -80,13 +80,11 @@ push (const stack<T>& s, const T& e)
 }
 
 template <typename T>
+inline
 T
 head (const stack<T>& s)
 {
-  if (s.elements.empty())
-    return default_value<T>::value();
-  else
-    return s.elements.front();
+  return s.elements.empty() ? default_value<T>::value() : s.elements.front();
 }
 
 template <typename T>
@@ -100,6 +98,7 @@ operator<< (std::ostream& os, const stack<T>& s)
 }
 
 template <typename T>
+inline
 std::size_t
 size (const stack<T>& s)
 {

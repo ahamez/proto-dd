@@ -19,7 +19,6 @@ struct proto_arc
 {
   using values_type = typename C::Values;
   using value_type = typename values_type::value_type;
-
   using value_stack_type     = dd::stack<value_type>;
   using successor_stack_type = dd::stack<sdd_ptr_type<C>>;
 
@@ -95,10 +94,11 @@ public:
   /// @brief The type of the valuation of this node.
   using values_type = typename C::Values;
 
-  using value_type = typename values_type::value_type;
 
   using arcs_type = std::vector<proto_arc<C>>;
 
+
+  /// @brief A (const) iterator on the arcs of this node.
   using const_iterator = typename arcs_type::const_iterator;
 
 private:

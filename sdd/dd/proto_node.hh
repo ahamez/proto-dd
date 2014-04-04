@@ -131,11 +131,14 @@ public:
     return arcs_.end();
   }
 
-  const arcs_type&
-  arcs()
+  /// @brief Get the number of arcs.
+  ///
+  /// O(1).
+  std::size_t
+  size()
   const noexcept
   {
-    return arcs_;
+    return arcs_.size();
   }
 };
 
@@ -152,7 +155,7 @@ bool
 operator==(const proto_node<C>& lhs, const proto_node<C>& rhs)
 noexcept
 {
-  return lhs.arcs() == rhs.arcs();
+  return lhs.size() == rhs.size() and std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 /// @brief Export a proto_node to a stream.

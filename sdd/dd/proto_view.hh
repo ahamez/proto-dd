@@ -83,11 +83,11 @@ struct mk_arcs_op
   const
   {
     assert((env.level() - 1) < env.level() && "Overflow");
-    assert(node.arcs().size() >= 1 && "Empty proto_node");
+    assert(node.size() >= 1 && "Empty proto_node");
 
     auto arcs_ptr = std::make_shared<arcs_type>();
     auto& arcs = *arcs_ptr;
-    arcs.reserve(node.arcs().size());
+    arcs.reserve(node.size());
 
     // A buffer of values reused for each arc.
     static std::vector<value_type> values_buffer;

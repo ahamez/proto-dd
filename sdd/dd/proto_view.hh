@@ -19,14 +19,12 @@ struct proto_view_identity
 {
   using env_type = dd::proto_env<C, Successor>;
 
-  const char* env;
-//  const env_type& env;
+  const env_type env;
   const char* node;
 
   proto_view_identity(const env_type& env, const proto_node<C>& node)
   noexcept
-    : env(reinterpret_cast<const char*>(&(*env)))
-//    : env(env)
+    : env(env)
     , node(reinterpret_cast<const char*>(&node))
   {}
 

@@ -11,6 +11,7 @@
 #include "sdd/hom/context.hh"
 #include "sdd/hom/definition.hh"
 #include "sdd/hom/identity.hh"
+#include "sdd/mem/cache.hh"
 #include "sdd/mem/unique_table.hh"
 
 namespace sdd {
@@ -96,6 +97,12 @@ struct internal_manager
   /// @brief Used to avoid frequent useless reallocations in saturation_fixpoint().
   boost::container::flat_set<homomorphism<C>> saturation_fixpoint_data;
 
+  /// @brief Used by proto_arcs_cache.
+  dummy_context dummy_cxt;
+
+  /// @brief Cache the construction of arcs from a proto_node.
+  mem::cache<dummy_context, mk_arcs_op<C, sdd_ptr_type<C>>, dummy_error> proto_arcs_cache;
+
   /// @brief Constructor with a given configuration.
   internal_manager(const C& configuration)
     : handlers(proto_env_unique_table, sdd_unique_table, hom_unique_table)
@@ -111,6 +118,8 @@ struct internal_manager
     , one(mk_terminal<one_terminal<C>>())
     , id(mk_id())
     , saturation_fixpoint_data()
+    , dummy_cxt()
+    , proto_arcs_cache(dummy_cxt, "mk_arcs_cache", 10000)
   {}
 
 private:

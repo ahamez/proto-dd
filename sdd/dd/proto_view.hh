@@ -1,8 +1,10 @@
 #ifndef _SDD_DD_PROTO_VIEW_HH_
 #define _SDD_DD_PROTO_VIEW_HH_
 
+#include <memory>
 #include <vector>
 
+#include "sdd/internal_manager_fwd.hh"
 #include "sdd/dd/alpha.hh"
 #include "sdd/dd/definition.hh"
 #include "sdd/dd/proto_env.hh"
@@ -33,6 +35,96 @@ struct proto_view_identity
   const noexcept
   {
     return env == other.env and node == other.node;
+  }
+};
+
+/*------------------------------------------------------------------------------------------------*/
+
+/// @internal
+struct dummy_context{};
+
+/// @internal
+struct dummy_error
+{
+  template <typename Operation>
+  void
+  add_step(Operation&&)
+  {}
+};
+
+/// @internal
+template <typename C, typename Successor>
+struct mk_arcs_op
+{
+  using values_type = typename C::Values;
+  using value_type = typename C::Values::value_type;
+  using env_type = dd::proto_env<C, Successor>;
+  using arc_type = arc<C, values_type>;
+  using arcs_type = std::vector<arc_type>;
+
+  using result_type = std::shared_ptr<arcs_type>;
+
+  const env_type env;
+  const proto_node<C>& node;
+
+  mk_arcs_op(const env_type e, const proto_node<C>& n)
+    : env(e), node(n)
+  {}
+
+  bool
+  operator==(const mk_arcs_op& other)
+  const noexcept
+  {
+    return env == other.env and &node == &other.node;
+  }
+
+  result_type
+  operator()(dummy_context&)
+  const
+  {
+    assert((env.level() - 1) < env.level() && "Overflow");
+    assert(node.arcs().size() >= 1 && "Empty proto_node");
+
+    auto arcs_ptr = std::make_shared<arcs_type>();
+    auto& arcs = *arcs_ptr;
+    arcs.reserve(node.arcs().size());
+
+    // A buffer of values reused for each arc.
+    std::vector<value_type> values_buffer;
+    values_buffer.reserve(node.begin()->current_values.size() * 4);
+
+    for (const auto& proto_arc : node)
+    {
+      // Rebuild the stacks needed to construct this arc.
+      auto values_stack = proto_arc.values;
+      values_stack.rebuild(env.values_stack(), C::rebuild);
+
+      auto succs_stack = proto_arc.successors;
+      succs_stack.rebuild( env.successors_stack()
+                         , [](const Successor& lhs, const Successor& rhs)
+                             {
+                               return rhs == dd::default_value<Successor>::value() ? lhs : rhs;
+                             });
+
+      // Get the values of the current level.
+      const auto k = head(values_stack);
+      std::transform( proto_arc.current_values.cbegin(), proto_arc.current_values.cend()
+                    , std::back_inserter(values_buffer)
+                    , [&](value_type v){return C::rebuild(v, k);});
+
+      // Get the successor of the current level.
+      const auto succ = head(succs_stack);
+
+      // The current arc is complete.
+      arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
+                       , SDD<C>(succ, env_type( env.level() - 1
+                                              , std::move(pop(values_stack))
+                                              , std::move(pop(succs_stack)))));
+
+      // Will be re-used on next iteration.
+      values_buffer.clear();
+    }
+    return arcs_ptr;
   }
 };
 
@@ -72,7 +164,8 @@ private:
   const env_type env_;
 
   /// @brief Store the temporary arcs of this view.
-  const arcs_type arcs_;
+//  const arcs_type arcs_;
+  const std::shared_ptr<arcs_type> arcs_;
 
   /// @brief Keep the original proto_node for identifications purposes.
   const proto_node<C>& node_;
@@ -81,7 +174,9 @@ public:
 
   proto_view(const env_type& env, const proto_node<C>& node)
   noexcept
-    : env_(env), arcs_(mk_arcs(env, node)), node_(node)
+    : env_(env)
+    , arcs_(global<C>().proto_arcs_cache(mk_arcs_op<C, Successor>(env, node)))
+    , node_(node)
   {}
 
   // Move a proto_view.
@@ -105,7 +200,7 @@ public:
   begin()
   const noexcept
   {
-    return arcs_.cbegin();
+    return arcs_->cbegin();
   }
 
   /// @brief Get the end of arcs.
@@ -115,7 +210,7 @@ public:
   end()
   const noexcept
   {
-    return arcs_.cend();
+    return arcs_->cend();
   }
 
   /// @brief Get the number of arcs.
@@ -125,7 +220,7 @@ public:
   size()
   const noexcept
   {
-    return arcs_.size();
+    return arcs_->size();
   }
 
   /// @brief Get an value that uniquely identify any proto_view created with the same environment
@@ -135,59 +230,6 @@ public:
   const noexcept
   {
     return proto_view_identity<C, Successor>(env_, node_);
-  }
-
-private:
-
-  /// @todo On the fly generation of arcs
-  /// @todo A cache?
-  /// @todo stack::pop() doesn't need to be functional
-  static
-  arcs_type
-  mk_arcs(const env_type& env, const proto_node<C>& node)
-  {
-    assert((env.level() - 1) < env.level() && "Overflow");
-    assert(node.arcs().size() >= 1 && "Empty proto_node");
-
-    arcs_type arcs;
-    arcs.reserve(node.arcs().size());
-
-    // A buffer of values reused for each arc.
-    std::vector<value_type> values_buffer;
-    values_buffer.reserve(node.begin()->current_values.size() * 4);
-
-    for (const auto& proto_arc : node)
-    {
-      // Rebuild the stacks needed to construct this arc.
-      auto values_stack = proto_arc.values;
-      values_stack.rebuild(env.values_stack(), C::rebuild);
-
-      auto succs_stack = proto_arc.successors;
-      succs_stack.rebuild( env.successors_stack()
-                         , [](const Successor& lhs, const Successor& rhs)
-                             {
-                               return rhs == dd::default_value<Successor>::value() ? lhs : rhs;
-                             });
-
-      // Get the values of the current level.
-      const auto k = head(values_stack);
-      std::transform( proto_arc.current_values.cbegin(), proto_arc.current_values.cend()
-                    , std::back_inserter(values_buffer)
-                    , [&](value_type v){return C::rebuild(v, k);});
-
-      // Get the successor of the current level.
-      const auto succ = head(succs_stack);
-
-      // The current arc is complete.
-      arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
-                       , SDD<C>(succ, env_type( env.level() - 1
-                                              , std::move(pop(values_stack))
-                                              , std::move(pop(succs_stack)))));
-
-      // Will be re-used on next iteration.
-      values_buffer.clear();
-    }
-    return arcs;
   }
 };
 
@@ -236,6 +278,21 @@ struct hash<sdd::proto_view_identity<C, Successor>>
   {
     std::size_t seed = sdd::util::hash(id.env);
     sdd::util::hash_combine(seed, id.node);
+    return seed;
+  }
+};
+
+/// @internal
+/// @brief Hash specialization for sdd::mk_arcs_op
+template <typename C, typename Successor>
+struct hash<sdd::mk_arcs_op<C, Successor>>
+{
+  std::size_t
+  operator()(const sdd::mk_arcs_op<C, Successor>& op)
+  const noexcept
+  {
+    std::size_t seed = sdd::util::hash(&*op.env);
+    sdd::util::hash_combine(seed, &op.node);
     return seed;
   }
 };

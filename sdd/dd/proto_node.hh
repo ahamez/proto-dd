@@ -52,19 +52,19 @@ bool
 operator<(const proto_arc<C>& lhs, const proto_arc<C>& rhs)
 noexcept
 {
-  if (lhs.current_values < rhs.current_values)
+  if (lhs.values < rhs.values)
   {
     return true;
   }
-  else if (lhs.current_values == rhs.current_values)
+  else if (lhs.values == rhs.values)
   {
-    if (lhs.values < rhs.values)
+    if (lhs.successors < rhs.successors)
     {
       return true;
     }
-    else if (lhs.values == rhs.values)
+    else if (lhs.successors == rhs.successors)
     {
-      return lhs.successors < rhs.successors;
+      return lhs.current_values < rhs.current_values;
     }
     return false;
   }

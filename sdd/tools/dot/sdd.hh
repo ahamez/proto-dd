@@ -38,6 +38,7 @@ struct to_dot_visitor
   const
   {
     assert(false);
+    return 0;
   }
 
   /// @brief |1|.

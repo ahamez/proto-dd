@@ -145,20 +145,6 @@ private:
   ptr_type
   mk_ptr(unsigned level, value_stack_type&& v, successor_stack_type&& s)
   {
-    std::cout << "mk_ptr()\n";
-    std::cout << "  level = " << level << std::endl;
-    std::cout << "  value stack : [";
-    for (const auto& x : v.elements)
-    {
-      std::cout << x << ", ";
-    }
-    std::cout << "]\n";
-    std::cout << "  succs stack : [";
-    for (const auto& x : s.elements)
-    {
-      std::cout << &*x << ", ";
-    }
-    std::cout << "]\n";
     auto& ut = global<C>().proto_env_unique_table;
     char* addr = ut.allocate(0 /* extra bytes */);
     unique_type* u = new (addr) unique_type(level, std::move(v), std::move(s));

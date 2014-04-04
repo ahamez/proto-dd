@@ -49,13 +49,11 @@ struct stack
 
   stack&
   pop()
+  noexcept
   {
     if (not elements.empty())
     {
-      for (std::size_t i = 1; i != elements.size(); ++i)
-      {
-        elements[i-1] = elements[i];
-      }
+      std::move(std::next(elements.begin()), elements.end(), elements.begin());
       elements.pop_back();
     }
     return *this;
@@ -129,8 +127,7 @@ common (const std::vector<std::reference_wrapper<const stack<T>>>& ss, Common&& 
     max_size = std::max(max_size, size(s.get()));
   stack<T> result;
   result.elements.reserve(max_size);
-  std::vector<T> values;
-  values.reserve(ss.size());
+  static std::vector<T> values;
   for (std::size_t i = 0; i != max_size; ++i)
   {
     for (const auto& s : ss)

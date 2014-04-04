@@ -90,8 +90,7 @@ struct mk_arcs_op
     arcs.reserve(node.arcs().size());
 
     // A buffer of values reused for each arc.
-    std::vector<value_type> values_buffer;
-    values_buffer.reserve(node.begin()->current_values.size() * 4);
+    static std::vector<value_type> values_buffer;
 
     for (const auto& proto_arc : node)
     {

@@ -118,8 +118,8 @@ struct mk_arcs_op
       // The current arc is complete.
       arcs.emplace_back( values_type(values_buffer.cbegin(), values_buffer.cend())
                        , SDD<C>(succ, env_type( env.level() - 1
-                                              , std::move(pop(values_stack))
-                                              , std::move(pop(succs_stack)))));
+                                              , std::move(values_stack.pop())
+                                              , std::move(succs_stack.pop()))));
 
       // Will be re-used on next iteration.
       values_buffer.clear();

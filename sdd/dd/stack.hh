@@ -47,6 +47,20 @@ struct stack
     return canonize(*this);
   }
 
+  stack&
+  pop()
+  {
+    if (not elements.empty())
+    {
+      for (std::size_t i = 1; i != elements.size(); ++i)
+      {
+        elements[i-1] = elements[i];
+      }
+      elements.pop_back();
+    }
+    return *this;
+  }
+
 };
 
 template <typename T>
@@ -60,24 +74,7 @@ push (const stack<T>& s, const T& e)
     stack<T> result;
     result.elements.reserve(s.elements.size() + 1);
     result.elements.push_back(e);
-    for (const auto& x : s.elements)
-      result.elements.push_back(x);
-    return result;
-  }
-}
-
-template <typename T>
-stack<T>
-pop (const stack<T>& s)
-{
-  if (s.elements.empty())
-    return s;
-  else
-  {
-    stack<T> result;
-    result.elements.reserve(s.elements.size() - 1);
-    for (std::size_t i = 1; i != s.elements.size(); ++i)
-      result.elements.push_back(s.elements[i]);
+    std::copy(s.elements.cbegin(), s.elements.cend(), std::back_inserter(result.elements));
     return result;
   }
 }

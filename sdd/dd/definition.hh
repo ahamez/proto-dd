@@ -445,6 +445,8 @@ private:
       arcs_succs_stacks.push_back(arcs.back().successors);
     }
 
+    std::sort(arcs.begin(), arcs.end());
+
     // Get the value stack to put in environment.
     value_stack_type env_value_stack
       = dd::common( arcs_values_stacks

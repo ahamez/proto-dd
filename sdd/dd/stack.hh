@@ -11,80 +11,69 @@ namespace sdd { namespace dd {
 
 /*------------------------------------------------------------------------------------------------*/
 
+/// @internal
 template <typename T>
 struct stack
 {
   std::vector<T> elements;
 
-  T
-  operator[] (std::size_t i) const
+  const T&
+  operator[] (std::size_t i)
+  const noexcept
   {
-    if (i < this->elements.size())
-      return this->elements[i];
-    else
-      return default_value<T>::value();
+    return elements[i];
   }
 
   template <typename Shift>
   stack&
   shift(const stack& rhs, Shift&& sh)
+  noexcept(noexcept(sh(std::declval<T>(), std::declval<T>())))
   {
-    std::size_t max_size = std::max(size(*this), size(rhs));
-    this->elements.resize(max_size, default_value<T>::value());
-    for (std::size_t i = 0; i != max_size; ++i)
-      this->elements[i] = sh(this->elements[i], rhs[i]);
-    return canonize(*this);
+    auto rhs_cit = rhs.elements.cbegin();
+    std::for_each(elements.begin(), elements.end(), [&](T& x){x = sh(x, *rhs_cit++);});
+    return *this;
   }
 
   template <typename Rebuild>
   stack&
   rebuild(const stack& rhs, Rebuild&& rb)
+  noexcept(noexcept(rb(std::declval<T>(), std::declval<T>())))
   {
-    std::size_t max_size = std::max(size(*this), size(rhs));
-    this->elements.resize(max_size, default_value<T>::value());
-    for (std::size_t i = 0; i != max_size; ++i)
-      this->elements[i] = rb(this->elements[i], rhs[i]);
-    return canonize(*this);
+    auto rhs_cit = rhs.elements.cbegin();
+    std::for_each(elements.begin(), elements.end(), [&](T& x){x = rb(x, *rhs_cit++);});
+    return *this;
   }
 
   stack&
   pop()
   noexcept
   {
-    if (not elements.empty())
-    {
-      std::move(std::next(elements.begin()), elements.end(), elements.begin());
-      elements.pop_back();
-    }
+    elements.pop_back();
     return *this;
   }
-
 };
 
-template <typename T>
+/// @internal
+template <typename T, typename E>
+inline
 stack<T>
-push (const stack<T>& s, const T& e)
+push(stack<T> s, E&& e)
 {
-  if (s.elements.empty() && (e == default_value<T>::value()))
-    return s;
-  else
-  {
-    stack<T> result;
-    result.elements.reserve(s.elements.size() + 1);
-    result.elements.push_back(e);
-    std::copy(s.elements.cbegin(), s.elements.cend(), std::back_inserter(result.elements));
-    return result;
-  }
+  s.elements.push_back(std::move(e));
+  return s;
 }
 
+/// @internal
 template <typename T>
 inline
-T
-head (const stack<T>& s)
+const T&
+head(const stack<T>& s)
+noexcept
 {
-  return s.elements.empty() ? default_value<T>::value() : s.elements.front();
+  return s.elements.back();
 }
 
+/// @internal
 template <typename T>
 std::ostream&
 operator<< (std::ostream& os, const stack<T>& s)
@@ -95,47 +84,39 @@ operator<< (std::ostream& os, const stack<T>& s)
   return os << " ]";
 }
 
+/// @internal
 template <typename T>
-inline
-std::size_t
-size (const stack<T>& s)
+std::vector<T>&
+static_values_buffer()
 {
-  return s.elements.size();
-}
-
-template <typename T>
-stack<T>&
-canonize (stack<T>& s)
-{
-  for (std::size_t i = s.elements.size() ; i > 0; --i)
+  static struct initializer
   {
-    if (s[i-1] == default_value<T>::value())
-      s.elements.pop_back();
-    else
-      break;
-  }
-  s.elements.shrink_to_fit();
-  return s;
+    std::vector<T> vec;
+    initializer() : vec() {vec.reserve(1024);}
+  } init;
+  return init.vec;
 }
 
+/// @internal
 template <typename T, typename Common>
 stack<T>
-common (const std::vector<std::reference_wrapper<const stack<T>>>& ss, Common&& cm)
+common(const std::vector<std::reference_wrapper<const stack<T>>>& ss, Common&& cm)
 {
-  std::size_t max_size = 0;
-  for (const auto& s : ss)
-    max_size = std::max(max_size, size(s.get()));
-  stack<T> result;
-  result.elements.reserve(max_size);
-  static std::vector<T> values;
-  for (std::size_t i = 0; i != max_size; ++i)
+  auto& values_buffer = static_values_buffer<T>();
+  stack<T> res;
+  const auto size = ss.begin()->get().elements.size();
+  res.elements.reserve(size);
+
+  for (auto i = 0; i < size; ++i)
   {
     for (const auto& s : ss)
-      values.push_back(s.get()[i]);
-    result.elements.push_back(cm(values.begin(), values.end()));
-    values.clear();
+    {
+      values_buffer.push_back(s.get()[i]);
+    }
+    res.elements.push_back(cm(values_buffer.begin(), values_buffer.end()));
+    values_buffer.clear();
   }
-  return canonize(result);
+  return res;
 }
 
 /*------------------------------------------------------------------------------------------------*/
